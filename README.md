@@ -196,11 +196,34 @@ npm run preview
 
 ## Docker
 
-Docker preview support is planned for Phase 5. Once that phase is added, this README will include:
+Phase 5 adds local Docker preview:
 
-- production-style container preview instructions
-- hot-reload dev container instructions
-- compose commands for both modes
+### Production-style preview (static nginx)
+
+Build and run:
+
+```bash
+docker compose up --build
+```
+
+Then open: `http://localhost:5173`
+
+### Dev-mode hot reload (Vite inside the container)
+
+Run:
+
+```bash
+docker compose -f docker-compose.dev.yml up
+```
+
+Then open: `http://localhost:5173`
+
+In dev mode, the project directory is mounted into the container so changes hot-reload.
+
+### Notes
+
+- Everything stays client-side; containers serve static assets only in preview mode.
+- If port `5173` is already in use on your host, choose another free port by editing the `docker-compose*.yml` mappings.
 
 ## Screenshots
 

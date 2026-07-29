@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+
+# --- Build stage: install deps and produce dist/ ---
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+# npm ci requires lock/package sync; fall back to npm install if the
+# container's bundled npm is older than the lockfile version.
+RUN npm install --no-audit --no-fund --prefer-offline || npm install --no-audit --no-fund
+
+COPY . .
+RUN npm run build
+
+# --- Production stage: serve static dist/ with nginx ---
+FROM nginx:alpine AS serve
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/ /usr/share/nginx/html/
+
+EXPOSE 80
+
+# --- Dev stage: Vite dev server with hot reload ---
+FROM node:20-alpine AS dev
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --no-audit --no-fund --prefer-offline || npm install --no-audit --no-fund
+
+COPY . .
+
+EXPOSE 5173
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port 5173 --strictPort"]

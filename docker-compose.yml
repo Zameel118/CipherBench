@@ -1,0 +1,9 @@
+services:
+  cipherbench:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: serve
+    ports:
+      - "5173:80"
+
