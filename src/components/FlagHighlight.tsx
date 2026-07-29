@@ -1,5 +1,31 @@
-import { useMemo } from 'react'
-import { compileFlagRegex, DEFAULT_FLAG_PATTERN } from '../core/flag-pattern'
+import { useEffect, useState } from 'react'
+import {
+  DEFAULT_FLAG_PATTERN,
+  findFlagMatchesAsync,
+  type FlagMatch,
+} from '../core/flag-pattern'
+
+function segmentsFromMatches(text: string, matches: FlagMatch[]) {
+  if (matches.length === 0) {
+    return [{ key: 'full', text, hl: false as const }]
+  }
+  const sorted = [...matches].sort((a, b) => a.index - b.index)
+  const parts: { key: string; text: string; hl: boolean }[] = []
+  let lastIndex = 0
+  let mi = 0
+  for (const m of sorted) {
+    if (m.index > lastIndex) {
+      parts.push({ key: `t-${lastIndex}`, text: text.slice(lastIndex, m.index), hl: false })
+    }
+    parts.push({ key: `m-${mi}`, text: m.text, hl: true })
+    mi++
+    lastIndex = m.end
+  }
+  if (lastIndex < text.length) {
+    parts.push({ key: `t-${lastIndex}`, text: text.slice(lastIndex), hl: false })
+  }
+  return parts
+}
 
 export function FlagHighlight({
   text,
@@ -8,31 +34,29 @@ export function FlagHighlight({
   text: string
   pattern?: string
 }) {
-  const segments = useMemo(() => {
-    const { regex, error } = compileFlagRegex(pattern)
-    if (!regex || error || text.length === 0) {
-      return [{ key: 'full', text, hl: false as const }]
+  const [segments, setSegments] = useState<{ key: string; text: string; hl: boolean }[]>(
+    () => [{ key: 'full', text, hl: false }],
+  )
+
+  useEffect(() => {
+    if (text.length === 0) {
+      setSegments([{ key: 'full', text: '', hl: false }])
+      return
     }
 
-    const parts: { key: string; text: string; hl: boolean }[] = []
-    let lastIndex = 0
-    let mi = 0
-
-    for (const match of text.matchAll(regex)) {
-      const m = match[0]
-      const start = match.index
-      if (!m || start === undefined) continue
-      if (start > lastIndex) {
-        parts.push({ key: `t-${lastIndex}`, text: text.slice(lastIndex, start), hl: false })
+    let cancelled = false
+    void findFlagMatchesAsync(text, pattern).then(({ matches, error }) => {
+      if (cancelled) return
+      if (error) {
+        setSegments([{ key: 'full', text, hl: false }])
+        return
       }
-      parts.push({ key: `m-${mi}`, text: m, hl: true })
-      mi++
-      lastIndex = start + m.length
+      setSegments(segmentsFromMatches(text, matches))
+    })
+
+    return () => {
+      cancelled = true
     }
-    if (lastIndex < text.length) {
-      parts.push({ key: `t-${lastIndex}`, text: text.slice(lastIndex), hl: false })
-    }
-    return parts.length === 0 ? [{ key: 'full', text, hl: false as const }] : parts
   }, [text, pattern])
 
   return (

@@ -1,4 +1,5 @@
 import { Base64 } from 'js-base64'
+import { stringFromCharCodes } from '../../core/char-codes'
 import type { Operation } from '../../core/types'
 
 /**
@@ -16,7 +17,7 @@ function utf16LeBytesToString(bytes: Uint8Array): string {
   for (let i = 0; i < bytes.length; i += 2) {
     codes.push(view.getUint16(i, true))
   }
-  return String.fromCharCode(...codes)
+  return stringFromCharCodes(codes)
 }
 
 function stringToUtf16LeBytes(text: string): Uint8Array {
@@ -29,7 +30,7 @@ function stringToUtf16LeBytes(text: string): Uint8Array {
 }
 
 function bytesToBinaryString(bytes: Uint8Array): string {
-  return String.fromCharCode(...bytes)
+  return stringFromCharCodes(bytes)
 }
 
 function binaryStringToBytes(binary: string): Uint8Array {

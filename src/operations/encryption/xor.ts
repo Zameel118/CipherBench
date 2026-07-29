@@ -1,3 +1,5 @@
+import { stringFromCharCodes } from '../../core/char-codes'
+import { bruteForceInputTooLarge } from '../../core/input-limits'
 import type { Operation } from '../../core/types'
 
 /** Fraction of bytes that look printable ASCII (for ranking XOR brute-force hits). */
@@ -34,7 +36,7 @@ function xorWithKey(text: string, keyBytes: number[]): string {
   if (keyBytes.length === 0) return text
   const codes = [...text].map((ch) => ch.charCodeAt(0))
   const out = codes.map((c, i) => c ^ keyBytes[i % keyBytes.length]!)
-  return String.fromCharCode(...out)
+  return stringFromCharCodes(out)
 }
 
 export const xorCipher: Operation = {
@@ -68,6 +70,10 @@ export const xorCipher: Operation = {
     }
 
     if (params.bruteForceSingleByte === true) {
+      const sizeError = bruteForceInputTooLarge(raw.length)
+      if (sizeError) {
+        return { data: raw, type: 'string', error: sizeError }
+      }
       const candidates: { key: number; text: string; score: number }[] = []
       for (let k = 0; k < 256; k++) {
         const decoded = xorWithKey(raw, [k])

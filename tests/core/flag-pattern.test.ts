@@ -21,6 +21,10 @@ describe('flag-pattern', () => {
     expect(validateFlagPattern('(a+)+')).toMatch(/unsafe/i)
   })
 
+  it('rejects quantified alternation', () => {
+    expect(validateFlagPattern('(a|a)+')).toMatch(/unsafe/i)
+  })
+
   it('rejects invalid regex at compile time', () => {
     expect(compileFlagRegex('[').error).toBeDefined()
   })

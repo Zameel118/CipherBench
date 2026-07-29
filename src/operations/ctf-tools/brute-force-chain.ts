@@ -6,6 +6,7 @@ import {
   flagMatchConfidence,
   validateFlagPattern,
 } from '../../core/flag-pattern'
+import { bruteForceInputTooLarge } from '../../core/input-limits'
 import { runRecipe } from '../../core/recipe-engine'
 import type { Operation, Recipe } from '../../core/types'
 import { base64Decode } from '../encoding/base64'
@@ -112,6 +113,11 @@ export function runBruteForceChains(
   }
   if (input.length === 0) {
     return { hits: [] }
+  }
+
+  const sizeError = bruteForceInputTooLarge(input.length)
+  if (sizeError) {
+    return { hits: [], error: sizeError }
   }
 
   const hits: ChainHit[] = []
