@@ -1106,23 +1106,81 @@ body,
   color: var(--text-dim);
 }
 
+/* CTF terminal scrollbars — thin mint rail */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 55%, #1a2820) color-mix(in srgb, var(--bg-soft) 80%, transparent);
+}
+
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--accent) 5%, transparent) 50%,
+      transparent 100%
+    ),
+    color-mix(in srgb, var(--bg) 55%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 70%, #0d1a12) 0%,
+    color-mix(in srgb, var(--accent-soft) 45%, #122018) 55%,
+    color-mix(in srgb, var(--accent) 55%, #0a1410) 100%
+  );
+  border-radius: 1px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 0 10px color-mix(in srgb, var(--accent) 22%, transparent);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.25s ease,
+    border-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-border);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-soft) 100%);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 0 28px color-mix(in srgb, var(--accent-soft) 20%, transparent);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+  border: none;
+}
+
+.cb-scroll::-webkit-scrollbar-track,
+.cb-pre::-webkit-scrollbar-track,
+.cb-textarea::-webkit-scrollbar-track {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 3px,
+      color-mix(in srgb, var(--accent) 4%, transparent) 3px,
+      color-mix(in srgb, var(--accent) 4%, transparent) 4px
+    ),
+    color-mix(in srgb, var(--bg-elevated) 70%, transparent);
 }
 
 /* Tour + SOP overlays */
@@ -1323,7 +1381,6 @@ body,
 }
 
 .cb-sop-scroll {
-  scrollbar-width: thin;
   scroll-behavior: smooth;
 }
 
