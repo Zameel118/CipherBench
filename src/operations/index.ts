@@ -16,6 +16,11 @@ import { rot13Caesar } from './encryption/rot13-caesar'
 import { xorCipher } from './encryption/xor'
 import { md5Hash } from './hashing/md5'
 import { sha1Hash, sha256Hash } from './hashing/sha'
+import { defangRefang } from './soc-tools/defang'
+import { iocExtract } from './soc-tools/ioc-extract'
+import { jwtDecode } from './soc-tools/jwt-decode'
+import { mimeHeaderDecode } from './soc-tools/mime-header-decode'
+import { powershellDecode } from './soc-tools/powershell-decode'
 
 /**
  * Central operation registry.
@@ -43,6 +48,11 @@ const allOperations: Operation[] = [
   sha256Hash,
   flagDetector,
   bruteForceChain,
+  defangRefang,
+  powershellDecode,
+  jwtDecode,
+  iocExtract,
+  mimeHeaderDecode,
 ]
 
 export const operationsMap: Map<string, Operation> = new Map(
