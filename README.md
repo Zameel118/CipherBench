@@ -249,9 +249,11 @@ Live site URL (after setup): `https://<your-github-username>.github.io/CipherBen
 1. Push this repository to GitHub as **`CipherBench`** (name and case must match `VITE_BASE_PATH`).
 2. Open **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-4. Choose branch **`gh-pages`**, folder **`/ (root)`**, then Save.
+4. Choose branch **`gh-pages`**, folder **`/ (root)`**, then **Save**.
 
-Alternatively, if you use **GitHub Actions** as the Pages source (recommended with the workflow below), set Source to **GitHub Actions** instead.
+**Important:** Do **not** use branch **`main`** for Pages. `main` contains source code (`index.html` loads `/src/main.tsx`), which will show a blank page on GitHub. The workflow publishes the **built** app to **`gh-pages`** only.
+
+If Pages already says "live" but the site is blank, switch the branch from `main` to **`gh-pages`** and wait 1–2 minutes.
 
 ### Automatic deploy (CI)
 
