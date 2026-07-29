@@ -259,7 +259,7 @@ If Pages already says "live" but the site is blank, switch the branch from `main
 
 On every push to **`main`**, `.github/workflows/deploy.yml`:
 
-- runs `npm ci` and `npm run build` with `VITE_BASE_PATH=/CipherBench/`
+- runs `npm install` and `npm run build` with `VITE_BASE_PATH=/CipherBench/`
 - publishes `dist/` to the **`gh-pages`** branch via `peaceiris/actions-gh-pages`
 
 ### Manual deploy from your machine
