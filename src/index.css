@@ -86,19 +86,130 @@ body,
   min-width: 0;
   flex: 1;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cb-workbench-row {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Default: workbench | ops rail side-by-side. Stack only on small phones. */
+.cb-workbench-row {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .cb-workbench-row {
+    flex-direction: column;
+  }
+}
+
+.cb-ops-rail {
+  display: flex;
+  width: min(400px, 42vw);
+  max-height: none;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(37, 99, 235, 0.28);
+  background: linear-gradient(180deg, rgba(3, 3, 8, 0.75), rgba(8, 10, 22, 0.92));
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 767px) {
+  .cb-ops-rail {
+    width: 100%;
+    max-height: 44vh;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid rgba(37, 99, 235, 0.28);
+  }
+}
+
+.cb-ops-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  scroll-padding: 12px;
+  padding: 12px;
+}
+
+.cb-ops-section {
+  scroll-snap-align: start;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  background: rgba(6, 8, 18, 0.35);
+  backdrop-filter: blur(6px);
+  opacity: 0.38;
+  transform: translateY(6px) scale(0.985);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease,
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.cb-ops-section[data-inview='true'] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  background: rgba(10, 14, 28, 0.88);
+  border-color: rgba(168, 85, 247, 0.38);
+  box-shadow:
+    0 0 48px -16px rgba(168, 85, 247, 0.35),
+    inset 0 1px 0 rgba(34, 211, 238, 0.06);
+}
+
+.cb-ops-section-body {
+  max-height: min(52vh, 520px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cb-ops-section {
+  min-height: calc(100% - 12px);
+}
+
+.cb-ops-section-body {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .cb-ops-section {
+    min-height: 0;
+  }
+
+  .cb-ops-section-body {
+    max-height: min(52vh, 520px);
+  }
 }
 
 .cb-stage {
   display: grid;
   min-height: 0;
   flex: 1;
+  min-width: 0;
   grid-template-columns: 1fr;
   gap: 12px;
-  padding: 12px 16px 0;
+  padding: 12px 16px;
   overflow: hidden;
 }
 
-@media (min-width: 1280px) {
+/* Side-by-side ingest/output when the workbench has room. */
+@media (min-width: 1100px) {
   .cb-stage {
     grid-template-columns: 1fr 1fr;
   }

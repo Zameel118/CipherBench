@@ -1,0 +1,294 @@
+CipherBench — manual function test samples
+==========================================
+How to use:
+1. Open http://127.0.0.1:5173/ (prefer 127.0.0.1 over "localhost" if UI looks stale).
+2. Clear the recipe (Reset), paste ONE sample into Intel Ingest.
+3. Add the named op from Arsenal, set params if noted, then Run chain (Ctrl+Enter).
+4. Check Decrypted Output against the EXPECTED line.
+
+Tip: test one op at a time. Use Transmit only after a recipe works if you want a share link.
+
+
+---------------------------------------------------------------------------
+ENCODING
+---------------------------------------------------------------------------
+
+### From Base64
+INPUT:
+SGVsbG8gQ2lwaGVyQmVuY2g=
+EXPECTED:
+Hello CipherBench
+
+### To Base64
+INPUT:
+Hello CipherBench
+EXPECTED:
+SGVsbG8gQ2lwaGVyQmVuY2g=
+
+### From Hex
+INPUT:
+48656c6c6f
+EXPECTED:
+Hello
+
+### To Hex
+INPUT:
+Hello
+EXPECTED:
+48656c6c6f   (casing may vary by implementation; CipherBench uses lowercase hex)
+
+### URL Decode
+INPUT:
+https%3A%2F%2Fevil.com%2Fpath%3Fq%3Dflag%7Bx%7D
+EXPECTED:
+https://evil.com/path?q=flag{x}
+
+### URL Encode
+INPUT:
+https://evil.com/path?q=flag{x}
+EXPECTED:
+https%3A%2F%2Fevil.com%2Fpath%3Fq%3Dflag%7Bx%7D
+(exact percent-encoding may encode more/fewer reserved chars — path and braces should be encoded)
+
+### Text to Binary
+PARAMS: separator = space
+INPUT:
+Hi
+EXPECTED:
+01001000 01101001
+
+### Binary to Text
+INPUT:
+01001000 01101001
+EXPECTED:
+Hi
+
+### Reverse
+INPUT:
+CipherBench
+EXPECTED:
+hcneBrehpiC
+
+### To Uppercase
+INPUT:
+Flag{mixed_Case}
+EXPECTED:
+FLAG{MIXED_CASE}
+
+### To Lowercase
+INPUT:
+Flag{mixed_Case}
+EXPECTED:
+flag{mixed_case}
+
+### Trim Whitespace
+INPUT:
+   padded flag   
+EXPECTED:
+padded flag
+
+### Normalize Whitespace
+INPUT:
+too    many
+  spaces	here
+EXPECTED:
+too many spaces here
+
+
+---------------------------------------------------------------------------
+ENCRYPTION
+---------------------------------------------------------------------------
+
+### ROT13 / Caesar  (shift = 13)
+INPUT:
+Uryyb PvcureOrapu
+EXPECTED:
+Hello CipherBench
+
+### ROT13 / Caesar  (bruteForceAllShifts = true)
+INPUT:
+Uryyb
+EXPECTED:
+Output lists all shifts; shift 13 should show "Hello"
+
+### XOR Cipher  (mode = single-byte, key = 0x05, bruteForce = false)
+INPUT:
+hello
+EXPECTED after Run:
+m`iij
+Then run XOR again with the same key on that output — should recover:
+hello
+
+### XOR Cipher  (repeating-key, key = key)
+INPUT:
+abcd
+EXPECTED:
+Length 4 ciphertext (binary-ish). Re-run XOR with the same key to recover "abcd".
+
+### XOR Cipher  (bruteForceSingleByte = true)
+Step A — create ciphertext: paste FLAG{easy_xor_test}, XOR with key 0x42, copy output.
+Step B — paste that ciphertext, enable bruteForceSingleByte.
+EXPECTED:
+A ranked list; top/high printable hit should include FLAG{easy_xor_test}
+
+
+---------------------------------------------------------------------------
+HASHING
+---------------------------------------------------------------------------
+
+### MD5
+INPUT:
+hello
+EXPECTED:
+5d41402abc4b2a76b9719d911017c592
+
+### SHA-1
+INPUT:
+hello
+EXPECTED:
+aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+
+### SHA-256
+INPUT:
+hello
+EXPECTED:
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+
+
+---------------------------------------------------------------------------
+CTF TOOLS
+---------------------------------------------------------------------------
+
+### Flag Detector
+INPUT:
+noise FLAG{abc_123} end CTF{x} more
+EXPECTED:
+Report listing FLAG{abc_123} and CTF{x} (and count)
+
+### Brute Force Chain
+INPUT:
+RkxBR3tmcm9tX2Jhc2U2NH0=
+EXPECTED:
+Hit mentioning FLAG{from_base64} with a confidence score
+
+Alternate INPUT:
+Q1RGe2NoYWluX29wfQ==
+EXPECTED:
+CTF{chain_op}
+
+
+---------------------------------------------------------------------------
+SOC TOOLS
+---------------------------------------------------------------------------
+
+### Defang / Refang  (direction = defang, if offered)
+INPUT:
+Visit https://evil.com/path and http://bad.example
+EXPECTED:
+hxxps://evil[.]com/path and hxxp://bad[.]example  (or similar defang style)
+
+### Defang / Refang  (direction = refang)
+INPUT:
+hxxps://evil[.]com/path
+EXPECTED:
+https://evil.com/path
+
+### PowerShell Decode  (direction = decode)
+INPUT:
+VwByAGkAdABlAC0ASABvAHMAdAAgACIAaABpACIA
+EXPECTED:
+Write-Host "hi"
+
+### PowerShell Decode  (direction = encode)
+INPUT:
+Get-Process
+EXPECTED:
+Base64 UTF-16LE blob (long). Decode that blob again to recover Get-Process.
+
+### JWT Decode
+INPUT:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMSIsInJvbGUiOiJhbmFseXN0In0.-_Yjs2ecSuxDp8wRmMJSzdI2sH7f-g-jVXIN8LS_bTc
+PARAMS (optional): secret = secret
+EXPECTED:
+Header alg HS256, payload sub=user1 role=analyst
+With secret "secret": HMAC verification VALID
+With secret "wrong": HMAC verification INVALID
+
+### IOC Extract
+INPUT:
+Contact evil@corp.com and visit https://evil.com/path
+IP 192.168.0.10 and again 192.168.0.10
+MD5 deadbeefdeadbeefdeadbeefdeadbeef
+SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+EXPECTED:
+Sections for Emails, IPv4, URLs, MD5, SHA256 — duplicates collapsed
+
+### MIME Header Decode
+INPUT:
+Subject: =?UTF-8?B?VGVzdA==?= alert
+EXPECTED:
+Subject: Test alert
+
+Alternate INPUT:
+=?UTF-8?Q?Hello_World?=
+EXPECTED:
+Hello World
+
+Alternate INPUT:
+=?UTF-8?B?SGVsbG8g5LiW55WM?=
+EXPECTED:
+Hello 世界
+
+
+---------------------------------------------------------------------------
+CHAIN / PRESET SMOKE CHECKS
+---------------------------------------------------------------------------
+
+### Preset: CTF · Base64
+Paste: SGVsbG8gQ2lwaGVyQmVuY2g=
+Click preset "CTF · Base64" (or arm From Base64) → Run
+EXPECTED: Hello CipherBench
+
+### Preset: CTF · Hex
+Paste: 48656c6c6f
+Arm From Hex → Run
+EXPECTED: Hello
+
+### Preset: SOC · JWT
+Paste the JWT sample above → Run JWT Decode
+EXPECTED: readable JSON header/payload
+
+### Preset: SOC · IOCs
+Paste the IOC Extract blob → Run IOC Extract
+EXPECTED: structured IOC sections
+
+### Magic suggestions
+Paste: SGVsbG8=
+Look at Magic / suggestions near input
+EXPECTED: Base64 decode ranked near the top
+
+### Flag highlight in output
+Paste: see FLAG{visible_here} after decode
+EXPECTED: flag pattern highlighted in Decrypted Output when filter matches
+
+
+---------------------------------------------------------------------------
+UI / LAYOUT CHECKS (after Docker rebuild)
+---------------------------------------------------------------------------
+[ ] Left rail shows Portal / Ops Chain / Arsenal / Transmit
+[ ] Ops Chain, Arsenal, Transmit live in a RIGHT side scroll panel (not bottom tabs)
+[ ] Scrolling the right panel fades sections in/out without scrolling the whole page
+[ ] Clicking Arsenal on the left rail scrolls the right panel to Arsenal
+[ ] Logo mark (shield + lock) looks complete in the header
+[ ] Ctrl+Enter runs the chain; Ctrl+K focuses arsenal search
+
+
+---------------------------------------------------------------------------
+If the UI still looks old
+---------------------------------------------------------------------------
+1. Use http://127.0.0.1:5173/ (not only localhost)
+2. Hard refresh once more (Ctrl+Shift+R)
+3. Or open DevTools → Network → Disable cache → reload
+4. Confirm the HTML references a hashed asset like /assets/index-*.js (name changes each build)
+5. Rebuild:  docker compose up -d --build --force-recreate
+6. Widen the window — Ops Chain / Arsenal / Transmit sit in a RIGHT scroll rail (side layout)

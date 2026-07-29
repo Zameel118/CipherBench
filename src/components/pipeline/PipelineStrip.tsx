@@ -89,7 +89,7 @@ function ParamControl({
   )
 }
 
-export function PipelineStrip() {
+export function PipelineStrip({ layout = 'horizontal' }: { layout?: 'horizontal' | 'vertical' }) {
   const recipe = useAppStore((s) => s.recipe)
   const removeRecipeStep = useAppStore((s) => s.removeRecipeStep)
   const reorderRecipe = useAppStore((s) => s.reorderRecipe)
@@ -132,19 +132,36 @@ export function PipelineStrip() {
           Clear chain
         </button>
       </div>
-      <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto p-4">
+      <div
+        className={
+          layout === 'vertical'
+            ? 'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2'
+            : 'flex min-h-0 flex-1 gap-3 overflow-x-auto p-4'
+        }
+      >
         {recipe.map((step, index) => {
           const op = getOperation(step.operationId)
           if (!op) return null
           const isOpen = expanded === step.instanceId
           return (
-            <div key={step.instanceId} className="flex flex-shrink-0 items-stretch gap-2">
+            <div
+              key={step.instanceId}
+              className={
+                layout === 'vertical'
+                  ? 'flex flex-col items-stretch gap-1'
+                  : 'flex flex-shrink-0 items-stretch gap-2'
+              }
+            >
               <div
                 draggable
                 onDragStart={() => onDragStart(index)}
                 onDragOver={(e) => onDragOver(e, index)}
                 onDragEnd={onDragEnd}
-                className="flex w-[min(280px,70vw)] flex-col rounded-xl border transition-all"
+                className={
+                  layout === 'vertical'
+                    ? 'flex w-full flex-col rounded-xl border transition-all'
+                    : 'flex w-[min(280px,70vw)] flex-col rounded-xl border transition-all'
+                }
                 style={{
                   borderColor:
                     dragIndex === index
@@ -196,7 +213,15 @@ export function PipelineStrip() {
                 )}
               </div>
               {index < recipe.length - 1 && (
-                <div className="flex items-center text-[#a855f7]">→</div>
+                <div
+                  className={
+                    layout === 'vertical'
+                      ? 'flex justify-center py-0.5 text-[#a855f7]'
+                      : 'flex items-center text-[#a855f7]'
+                  }
+                >
+                  {layout === 'vertical' ? '↓' : '→'}
+                </div>
               )}
             </div>
           )

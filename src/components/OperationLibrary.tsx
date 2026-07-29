@@ -12,7 +12,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Extractors: '#4ade80',
 }
 
-export function OperationLibrary() {
+export function OperationLibrary({ compact = false }: { compact?: boolean }) {
   const search = useAppStore((s) => s.operationSearch)
   const setSearch = useAppStore((s) => s.setOperationSearch)
   const addOperationToRecipe = useAppStore((s) => s.addOperationToRecipe)
@@ -87,7 +87,13 @@ export function OperationLibrary() {
                 <span className="font-code text-[10px] text-[#6b7194]">{ops.length}</span>
               </button>
               {!isCollapsed && (
-                <div className="mt-1 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                <div
+                  className={
+                    compact
+                      ? 'mt-1 grid gap-1'
+                      : 'mt-1 grid gap-1 sm:grid-cols-2 lg:grid-cols-3'
+                  }
+                >
                   {ops.map((op) => (
                     <button
                       key={op.id}

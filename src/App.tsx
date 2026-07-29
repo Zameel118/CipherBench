@@ -3,7 +3,7 @@ import { InputPane } from './components/InputPane'
 import { OutputPane } from './components/OutputPane'
 import { CommandHeader } from './components/layout/CommandHeader'
 import { SideRail } from './components/layout/SideRail'
-import { OpsDeck, type DeckTab } from './components/layout/OpsDeck'
+import { OpsSidePanel, type DeckTab } from './components/layout/OpsSidePanel'
 import { useAppStore } from './store/useAppStore'
 
 function App() {
@@ -13,6 +13,9 @@ function App() {
   const recipe = useAppStore((s) => s.recipe)
   const [runFlash, setRunFlash] = useState(false)
   const [deckTab, setDeckTab] = useState<DeckTab>('arsenal')
+  const [scrollRequest, setScrollRequest] = useState<{ tab: DeckTab; at: number } | null>(
+    null,
+  )
 
   useEffect(() => {
     hydrateRecipeFromUrl()
@@ -29,6 +32,11 @@ function App() {
     window.setTimeout(() => setRunFlash(false), 500)
   }, [runCurrentRecipe])
 
+  const navigateOps = useCallback((tab: DeckTab) => {
+    setDeckTab(tab)
+    setScrollRequest({ tab, at: Date.now() })
+  }, [])
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey)) return
@@ -39,37 +47,40 @@ function App() {
       }
       if (event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        setDeckTab('arsenal')
+        navigateOps('arsenal')
         setOperationSearch('')
-        const el = document.getElementById('op-search') as HTMLInputElement | null
-        el?.focus()
-        el?.select()
-        document.getElementById('ops-deck')?.scrollIntoView({ behavior: 'smooth' })
+        window.setTimeout(() => {
+          const el = document.getElementById('op-search') as HTMLInputElement | null
+          el?.focus()
+          el?.select()
+        }, 400)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [flashRun, setOperationSearch])
+  }, [flashRun, setOperationSearch, navigateOps])
 
-  const scrollWorkbench = () => {
-    document.getElementById('workbench-input')?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const onDeckTab = (tab: DeckTab) => {
-    setDeckTab(tab)
-    document.getElementById('ops-deck')?.scrollIntoView({ behavior: 'smooth' })
+  const focusInput = () => {
+    const el = document.querySelector('#workbench-input textarea') as HTMLTextAreaElement | null
+    el?.focus()
   }
 
   return (
     <div className="cb-root cb-scanlines flex h-screen overflow-hidden">
-      <SideRail deckTab={deckTab} onDeckTab={onDeckTab} onScrollWorkbench={scrollWorkbench} />
-      <div className="cb-shell">
+      <SideRail deckTab={deckTab} onDeckTab={navigateOps} onScrollWorkbench={focusInput} />
+      <div className="cb-shell min-h-0">
         <CommandHeader recipeCount={recipe.length} onExecute={flashRun} runFlash={runFlash} />
-        <div className="cb-stage" id="workbench">
-          <InputPane />
-          <OutputPane />
+        <div className="cb-workbench-row min-h-0 flex-1">
+          <div className="cb-stage min-h-0 flex-1" id="workbench">
+            <InputPane />
+            <OutputPane />
+          </div>
+          <OpsSidePanel
+            activeTab={deckTab}
+            onTabChange={setDeckTab}
+            scrollRequest={scrollRequest}
+          />
         </div>
-        <OpsDeck tab={deckTab} onTab={setDeckTab} />
         <footer className="flex flex-shrink-0 items-center justify-between border-t border-[rgba(37,99,235,0.2)] px-6 py-2 text-[11px] text-[#6b7194]">
           <span>CipherBench · client-side CTF/SOC workbench</span>
           <span className="font-code">
