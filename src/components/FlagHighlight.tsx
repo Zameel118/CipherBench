@@ -62,7 +62,7 @@ export function FlagHighlight({
         seg.highlight ? (
           <mark
             key={seg.key}
-            className="rounded bg-amber-200 px-0.5 text-amber-950 ring-1 ring-amber-400/60"
+            className="rounded bg-amber-500/20 px-0.5 text-amber-300 ring-1 ring-amber-500/40"
           >
             {seg.text}
           </mark>

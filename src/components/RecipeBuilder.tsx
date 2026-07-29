@@ -21,13 +21,14 @@ function ParamControl({
 
   if (type === 'boolean') {
     return (
-      <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+      <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
         <input
           type="checkbox"
           checked={Boolean(value)}
           onChange={(e) =>
             updateStepParams(step.instanceId, { [paramName]: e.target.checked })
           }
+          className="accent-cyan-500"
         />
         {paramName}
       </label>
@@ -36,19 +37,17 @@ function ParamControl({
 
   if (type === 'select' && options) {
     return (
-      <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
-        <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
+      <label className="flex flex-col gap-0.5 text-[11px] text-slate-400">
+        <span className="text-slate-500">{paramName}</span>
         <select
           value={String(value)}
           onChange={(e) =>
             updateStepParams(step.instanceId, { [paramName]: e.target.value })
           }
-          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded border border-slate-700/50 bg-slate-900/70 px-1.5 py-0.5 text-[11px] text-slate-300 outline-none"
         >
           {options.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
+            <option key={opt} value={opt}>{opt}</option>
           ))}
         </select>
       </label>
@@ -57,8 +56,8 @@ function ParamControl({
 
   if (type === 'number') {
     return (
-      <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
-        <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
+      <label className="flex flex-col gap-0.5 text-[11px] text-slate-400">
+        <span className="text-slate-500">{paramName}</span>
         <input
           type="number"
           value={Number(value)}
@@ -67,22 +66,22 @@ function ParamControl({
               [paramName]: Number(e.target.value),
             })
           }
-          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded border border-slate-700/50 bg-slate-900/70 px-1.5 py-0.5 text-[11px] text-slate-300 outline-none"
         />
       </label>
     )
   }
 
   return (
-    <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
-      <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
+    <label className="flex flex-col gap-0.5 text-[11px] text-slate-400">
+      <span className="text-slate-500">{paramName}</span>
       <input
         type="text"
         value={String(value)}
         onChange={(e) =>
           updateStepParams(step.instanceId, { [paramName]: e.target.value })
         }
-        className="rounded border border-slate-200 bg-white px-1.5 py-1 font-mono text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        className="rounded border border-slate-700/50 bg-slate-900/70 px-1.5 py-0.5 font-mono text-[11px] text-slate-300 outline-none"
       />
     </label>
   )
@@ -114,37 +113,48 @@ export function RecipeBuilder() {
   }, [])
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recipe</h2>
+    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800/80 bg-[#0f1629]">
+      <header className="flex flex-shrink-0 items-center justify-between border-b border-slate-800/60 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-violet-500/80 shadow-[0_0_6px_rgb(139_92_246/0.4)]" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Recipe</h2>
+          {recipe.length > 0 && (
+            <span className="rounded-full bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-bold text-violet-400">
+              {recipe.length}
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={clearRecipe}
           disabled={recipe.length === 0}
-          className="rounded px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="rounded px-2 py-0.5 text-[11px] text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300 disabled:opacity-30"
         >
-          Clear recipe
+          Clear
         </button>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-2">
-        <div className="flex min-h-0 flex-col border-b border-slate-100 pb-3 md:border-b-0 md:border-r md:pb-0 md:pr-3 dark:border-slate-800">
-          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-            Library
-          </h3>
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        {/* Operations library */}
+        <div className="flex min-h-0 flex-col border-b border-slate-800/40 p-2 md:border-b-0 md:border-r">
           <OperationLibrary />
         </div>
 
-        <div className="flex min-h-0 flex-col">
-          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-            Active steps
-          </h3>
+        {/* Active steps */}
+        <div className="flex min-h-0 flex-col p-2">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
+              Pipeline
+            </span>
+          </div>
           {recipe.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Add operations from the library. Drag steps to reorder.
-            </p>
+            <div className="flex flex-1 items-center justify-center">
+              <p className="max-w-[180px] text-center text-xs leading-relaxed text-slate-600">
+                Click operations from the library to build your decode pipeline.
+              </p>
+            </div>
           ) : (
-            <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+            <ol className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
               {recipe.map((step, index) => {
                 const op = getOperation(step.operationId)
                 if (!op) return null
@@ -155,28 +165,35 @@ export function RecipeBuilder() {
                     onDragStart={() => onDragStart(index)}
                     onDragOver={(e) => onDragOver(e, index)}
                     onDragEnd={onDragEnd}
-                    className={`rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800/70 ${
-                      dragIndex === index ? 'opacity-60 ring-2 ring-sky-300' : ''
-                    }`}
+                    className={`group rounded-md border transition-all ${
+                      dragIndex === index
+                        ? 'border-cyan-500/40 opacity-60 ring-1 ring-cyan-500/30'
+                        : 'border-slate-700/40 hover:border-slate-600/60'
+                    } bg-slate-900/50 p-2`}
                   >
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <span className="cursor-grab text-xs text-slate-400 dark:text-slate-500">::</span>
-                        <span className="ml-1 text-sm font-medium text-slate-800 dark:text-slate-100">
-                          {index + 1}. {op.name}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="cursor-grab text-[10px] text-slate-600 active:cursor-grabbing">⠿</span>
+                        <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-cyan-900/40 text-[9px] font-bold text-cyan-400">
+                          {index + 1}
+                        </span>
+                        <span className="truncate text-xs font-medium text-slate-200">
+                          {op.name}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeRecipeStep(step.instanceId)}
-                        className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40"
+                        className="flex-shrink-0 rounded p-0.5 text-slate-600 opacity-0 transition-all hover:bg-red-950/40 hover:text-red-400 group-hover:opacity-100"
                         aria-label={`Remove ${op.name}`}
                       >
-                        Remove
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+                        </svg>
                       </button>
                     </div>
                     {op.params.length > 0 && (
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
                         {op.params.map((p) => (
                           <ParamControl
                             key={p.name}

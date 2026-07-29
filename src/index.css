@@ -1,16 +1,15 @@
 @import 'tailwindcss';
-@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  font-family: system-ui, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: #e2e8f0;
+  background-color: #0a0e1a;
 }
 
 html {
-  background-color: #f8fafc;
+  background-color: #0a0e1a;
 }
 
 body {
@@ -28,5 +27,38 @@ body {
 }
 
 ::selection {
-  background: rgb(125 211 252 / 0.35);
+  background: rgb(34 211 238 / 0.3);
+}
+
+/* Custom scrollbar for the cyber look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Glow animation for the logo */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgb(6 182 212 / 0.5)); }
+  50% { filter: drop-shadow(0 0 12px rgb(6 182 212 / 0.8)); }
+}
+.logo-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Subtle grid background */
+.cyber-grid {
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
 }

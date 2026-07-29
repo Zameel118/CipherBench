@@ -8,45 +8,26 @@ function App() {
   const hydrateRecipeFromUrl = useAppStore((s) => s.hydrateRecipeFromUrl)
   const runCurrentRecipe = useAppStore((s) => s.runCurrentRecipe)
   const setOperationSearch = useAppStore((s) => s.setOperationSearch)
-  const theme = useAppStore((s) => s.theme)
-  const setTheme = useAppStore((s) => s.setTheme)
 
   useEffect(() => {
     hydrateRecipeFromUrl()
   }, [hydrateRecipeFromUrl])
 
+  // Force dark mode
   useEffect(() => {
-    const stored = window.localStorage.getItem('cipherbench-theme')
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      setTheme(stored)
-    }
-  }, [setTheme])
+    document.documentElement.classList.add('dark')
+    document.documentElement.style.colorScheme = 'dark'
+  }, [])
 
-  useEffect(() => {
-    const root = document.documentElement
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-    const applyTheme = () => {
-      const resolved = theme === 'system' ? (prefersDark.matches ? 'dark' : 'light') : theme
-      root.classList.toggle('dark', resolved === 'dark')
-      root.style.colorScheme = resolved
-    }
-
-    applyTheme()
-    window.localStorage.setItem('cipherbench-theme', theme)
-    prefersDark.addEventListener('change', applyTheme)
-    return () => prefersDark.removeEventListener('change', applyTheme)
-  }, [theme])
-
+  // Keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey)) return
-
       if (event.key === 'Enter') {
         event.preventDefault()
         runCurrentRecipe()
         return
       }
-
       if (event.key.toLowerCase() === 'k') {
         event.preventDefault()
         setOperationSearch('')
@@ -55,49 +36,52 @@ function App() {
         search?.select()
       }
     }
-
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [runCurrentRecipe, setOperationSearch])
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
-      <header className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex max-w-[1800px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              CipherBench
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Client-side encode/decode workbench for CTF and SOC workflows.
-            </p>
+    <div className="flex h-screen flex-col overflow-hidden bg-[#0a0e1a] text-slate-200 cyber-grid">
+      {/* Header */}
+      <header className="relative z-10 flex-shrink-0 border-b border-cyan-900/30 bg-[#0c1120]/90 px-4 py-2.5 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1920px] items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Logo */}
+            <div className="logo-glow flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="30" height="30" rx="6" stroke="rgb(6 182 212)" strokeWidth="1.5" fill="rgba(6, 182, 212, 0.08)" />
+                <path d="M16 6L16 10M16 22L16 26M6 16H10M22 16H26" stroke="rgb(6 182 212)" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="16" cy="16" r="5" stroke="rgb(6 182 212)" strokeWidth="1.5" fill="rgba(6, 182, 212, 0.1)" />
+                <circle cx="16" cy="16" r="2" fill="rgb(6 182 212)" />
+                <path d="M11.5 11.5L13.5 13.5M18.5 18.5L20.5 20.5M20.5 11.5L18.5 13.5M13.5 18.5L11.5 20.5" stroke="rgb(6 182 212)" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight text-cyan-400">
+                CipherBench
+              </h1>
+              <p className="text-[11px] text-slate-500">
+                Encode · Decode · Analyze
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <span className="rounded-full border border-slate-200 px-2 py-1 dark:border-slate-700">
-              Ctrl/Cmd+Enter run
-            </span>
-            <span className="rounded-full border border-slate-200 px-2 py-1 dark:border-slate-700">
-              Ctrl/Cmd+K search ops
-            </span>
-            <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
-              <span>Theme</span>
-              <select
-                value={theme}
-                onChange={(e) =>
-                  setTheme(e.target.value as 'light' | 'dark' | 'system')
-                }
-                className="bg-transparent text-slate-700 outline-none dark:text-slate-200"
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
+
+          <div className="flex items-center gap-2">
+            <kbd className="hidden rounded border border-slate-700/60 bg-slate-800/50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500 sm:inline-block">
+              Ctrl+Enter
+            </kbd>
+            <span className="hidden text-[10px] text-slate-600 sm:inline">run</span>
+            <span className="hidden text-slate-700 sm:inline">·</span>
+            <kbd className="hidden rounded border border-slate-700/60 bg-slate-800/50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500 sm:inline-block">
+              Ctrl+K
+            </kbd>
+            <span className="hidden text-[10px] text-slate-600 sm:inline">search</span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto grid min-h-0 w-full max-w-[1800px] flex-1 grid-cols-1 gap-3 p-3 md:grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
+      {/* Main 3-pane layout — fixed height, no page scroll */}
+      <main className="mx-auto grid min-h-0 w-full max-w-[1920px] flex-1 grid-cols-1 gap-2 overflow-hidden p-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
         <InputPane />
         <RecipeBuilder />
         <OutputPane />

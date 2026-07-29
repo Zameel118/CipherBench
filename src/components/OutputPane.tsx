@@ -22,39 +22,49 @@ export function OutputPane() {
   }, [flagPattern, patternCompileError])
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <header className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Output</h2>
-        {recipe.length === 0 && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Add recipe steps to transform input.
-          </p>
-        )}
-        <label className="mt-2 block text-xs text-slate-600 dark:text-slate-300">
-          Flag pattern
+    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800/80 bg-[#0f1629]">
+      <header className="flex-shrink-0 border-b border-slate-800/60 px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-amber-500/80 shadow-[0_0_6px_rgb(245_158_11/0.4)]" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Output</h2>
+          </div>
+          {recipe.length === 0 && (
+            <span className="text-[10px] text-slate-600">
+              passthrough
+            </span>
+          )}
+        </div>
+
+        {/* Flag pattern input — compact */}
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-[10px] text-slate-500">Flag regex</span>
           <input
             type="text"
             value={flagPattern}
             onChange={(e) => setFlagPattern(e.target.value)}
-            className="mt-0.5 w-full rounded border border-slate-200 bg-white px-2 py-1 font-mono text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="min-w-0 flex-1 rounded border border-slate-700/60 bg-slate-900/60 px-2 py-0.5 font-mono text-[11px] text-slate-300 outline-none transition-colors focus:border-cyan-700 focus:ring-1 focus:ring-cyan-800"
             spellCheck={false}
           />
-        </label>
+        </div>
         {flagPatternError && (
-          <p className="mt-1 text-xs text-amber-800 dark:text-amber-300" role="status">
+          <p className="mt-1 text-[10px] text-amber-400" role="status">
             {flagPatternError}
           </p>
         )}
       </header>
+
       {outputError && recipe.length > 0 && (
         <div
-          className="border-b border-red-100 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-200"
+          className="flex-shrink-0 border-b border-red-900/40 bg-red-950/30 px-3 py-1.5 text-xs text-red-400"
           role="alert"
         >
+          <span className="mr-1.5 font-mono text-red-500">✕</span>
           {outputError}
         </div>
       )}
-      <pre className="min-h-[220px] flex-1 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-sm text-slate-900 dark:text-slate-100">
+
+      <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-sm leading-relaxed text-sky-300/90">
         {patternCompileError ? (
           display
         ) : (

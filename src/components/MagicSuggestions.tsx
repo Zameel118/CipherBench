@@ -16,26 +16,28 @@ export function MagicSuggestions() {
   }
 
   return (
-    <div className="border-b border-slate-100 bg-sky-50/80 px-3 py-2 dark:border-slate-800 dark:bg-sky-950/30">
-      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-sky-900 dark:text-sky-200">
-        Magic suggestions
+    <div className="flex-shrink-0 border-b border-cyan-900/20 bg-cyan-950/20 px-3 py-1.5">
+      <p className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-600">
+        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Auto-detect
       </p>
-      <ul className="space-y-1">
+      <div className="flex flex-wrap gap-1">
         {suggestions.map((s) => (
-          <li key={s.operationId}>
-            <button
-              type="button"
-              onClick={() => addOperationToRecipe(s.operationId)}
-              className="w-full rounded-md border border-sky-200 bg-white px-2 py-1.5 text-left text-sm hover:border-sky-300 hover:bg-sky-50 dark:border-sky-900/70 dark:bg-slate-900 dark:hover:bg-sky-950/40"
-            >
-              <span className="font-medium text-slate-800 dark:text-slate-100">{s.name}</span>
-              <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
-                {(s.score * 100).toFixed(0)}% — {s.reason}
-              </span>
-            </button>
-          </li>
+          <button
+            key={s.operationId}
+            type="button"
+            onClick={() => addOperationToRecipe(s.operationId)}
+            className="rounded-full border border-cyan-800/40 bg-cyan-950/40 px-2 py-0.5 text-[11px] text-cyan-400 transition-all hover:border-cyan-600/50 hover:bg-cyan-900/30 hover:text-cyan-300"
+          >
+            {s.name}
+            <span className="ml-1 text-[9px] text-cyan-600">
+              {(s.score * 100).toFixed(0)}%
+            </span>
+          </button>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
