@@ -616,6 +616,8 @@
         <a href="#encoding">Encoding ops</a>
         <a href="#encryption">Encryption ops</a>
         <a href="#hashing">Hashing ops</a>
+        <a href="#data-format">Data format</a>
+        <a href="#extractors">Extractors</a>
         <a href="#ctf">CTF tools</a>
         <a href="#soc">SOC tools</a>
         <a href="#security">Security model</a>
@@ -696,8 +698,8 @@
           </button>
           <div class="block-body"><div class="block-body-inner">
             <ol class="steps">
-              <li><strong>Paste</strong> ciphertext, logs, JWT, or PowerShell blob (or use Sample ▾).</li>
-              <li>Read <strong>// detect</strong> chips under Input - click to arm a likely decode.</li>
+              <li><strong>Paste</strong> ciphertext, logs, JWT, or PowerShell blob (or use Sample ▾ / File drop).</li>
+              <li>Read <strong>magic</strong> chain chips under Input - click to arm a full multi-step recipe.</li>
               <li>Add more ops from Operations; expand recipe steps to set alphabet, XOR key, JWT secret, etc.</li>
               <li>Leave <strong>Auto</strong> on, or hit <strong>Run</strong> after edits.</li>
               <li>Check Output + flag highlights; use Find Flags / IOC Extract when hunting.</li>
@@ -718,36 +720,36 @@
           <div class="block-body"><div class="block-body-inner">
             <div class="grid">
               <div class="card">
-                <h4>Magic detect</h4>
-                <p>Heuristic suggestions (score %) appear beside Input when Base64, JWT, hex, etc. look likely. Auto-shown; hide until input changes.</p>
+                <h4>Magic chains</h4>
+                <p>Multi-step recipe suggestions (Base64→Gunzip, JWT, HTML entities, JSON Path, …) with score %. Click to load the full chain.</p>
+              </div>
+              <div class="card">
+                <h4>File drop</h4>
+                <p>Open or drag a file onto Input. Text loads as UTF-8; binary loads as latin1 and arms Hex Dump. Magic bytes labeled when known.</p>
+              </div>
+              <div class="card">
+                <h4>Fork / Diff</h4>
+                <p>Capture Output as a fork baseline; Diff shows line-level changes vs the current result. Also available from Share.</p>
+              </div>
+              <div class="card">
+                <h4>Named library</h4>
+                <p>Save named recipes on-device (separate from recent history) and reload from Share.</p>
+              </div>
+              <div class="card">
+                <h4>Case report</h4>
+                <p>Export Markdown with recipe, input, output, flag pattern, and fork snapshot. Print to PDF from any Markdown viewer.</p>
+              </div>
+              <div class="card">
+                <h4>Workers</h4>
+                <p>XOR single-byte brute and large hash digests offload to Web Workers when available.</p>
               </div>
               <div class="card">
                 <h4>Entropy badge</h4>
                 <p><code>H≈</code> Shannon entropy on Input helps spot high-entropy blobs (XOR / compressed) vs plain encoding.</p>
               </div>
               <div class="card">
-                <h4>Swap↑</h4>
-                <p>Promote current Output into Input to continue chaining without copy-paste friction.</p>
-              </div>
-              <div class="card">
-                <h4>Sample packs</h4>
-                <p>One-click Base64 flag, hex blob, or JWT stub for demos and regression checks.</p>
-              </div>
-              <div class="card">
                 <h4>Flag radar</h4>
                 <p>Configurable regex with nested-quantifier / alternation rejection, scan length caps, match limits, and a worker timeout so bad patterns cannot freeze the UI.</p>
-              </div>
-              <div class="card">
-                <h4>Brute-force guards</h4>
-                <p>XOR single-byte brute and decode-chain brute refuse inputs over ~500 KB with a clear error instead of locking the tab.</p>
-              </div>
-              <div class="card">
-                <h4>Status tray</h4>
-                <p>Live counts for flags found and IOCs; Suggestions jumps to / pulses the detect strip.</p>
-              </div>
-              <div class="card">
-                <h4>Recipe history</h4>
-                <p>Save recent recipes on-device; reload from Share without re-building the chain.</p>
               </div>
             </div>
           </div></div>
@@ -758,7 +760,7 @@
           <button type="button" class="block-toggle" aria-expanded="false">
             <span>
               <p class="block-title">// encoding operations</p>
-              <p class="block-sub">Base64 · Hex · URL · text transforms</p>
+              <p class="block-sub">Base64 · Base32/58/85 · Hex · URL · HTML · Punycode · transforms</p>
             </span>
             <span class="chevron" aria-hidden>▸</span>
           </button>
@@ -767,10 +769,15 @@
               <thead><tr><th>Op</th><th>Function</th></tr></thead>
               <tbody>
                 <tr><td>From / To Base64</td><td>Standard or URL-safe alphabet. Decode is the usual first hop on CTF blobs and JWT segments.</td></tr>
+                <tr><td>From / To Base32</td><td>RFC 4648 Base32 (common in TOTP seeds and some malware configs).</td></tr>
+                <tr><td>From / To Base58</td><td>Bitcoin-style alphabet (no 0/O/I/l) for wallet-adjacent CTF strings.</td></tr>
+                <tr><td>From / To Ascii85</td><td>Adobe Ascii85 with <code>&lt;~ ~&gt;</code> framing.</td></tr>
                 <tr><td>From / To Hex</td><td>Byte ↔ hex with optional delimiters. Use after Base64 when the next layer is hex-packed.</td></tr>
                 <tr><td>URL Encode / Decode</td><td>Percent-encoding for query strings and phishing URLs.</td></tr>
+                <tr><td>HTML Entities</td><td>Named / decimal / hex entity encode; decode named + numeric references.</td></tr>
+                <tr><td>Punycode</td><td>IDNA host encode/decode via the URL API for internationalized domains.</td></tr>
                 <tr><td>Text ↔ Binary</td><td>ASCII/UTF-16 style binary views for homework-style challenges.</td></tr>
-                <tr><td>Reverse · Case · Trim · Normalize</td><td>Quick cleanup: reverse strings, upper/lower, trim edges, collapse whitespace before hashing or matching.</td></tr>
+                <tr><td>Reverse · Case · Trim · Normalize</td><td>Quick cleanup before hashing or matching.</td></tr>
               </tbody>
             </table>
           </div></div>
@@ -781,22 +788,27 @@
           <button type="button" class="block-toggle" aria-expanded="false">
             <span>
               <p class="block-title">// encryption / cipher ops</p>
-              <p class="block-sub">XOR · ROT13 / Caesar</p>
+              <p class="block-sub">XOR · ROT13 · AES-CBC · RC4</p>
             </span>
             <span class="chevron" aria-hidden>▸</span>
           </button>
           <div class="block-body"><div class="block-body-inner">
             <h3>XOR</h3>
             <p>
-              Single-byte or repeating-key XOR. Optional <strong>single-byte brute force</strong> tries all 256 keys,
-              ranks by printable ratio, and prints scored candidates - classic for one-byte CTF XORs.
-              Large inputs are blocked in brute mode to protect the main thread.
+              Single-byte or repeating-key XOR. Optional <strong>single-byte brute force</strong> tries all 256 keys
+              (Web Worker when available), ranks by printable ratio. Large inputs are blocked in brute mode.
             </p>
             <h3>ROT13 / Caesar</h3>
             <p>
-              Shift A–Z / a–z. Use shift 13 for ROT13, or enable brute-force of all non-zero shifts to recover
-              Caesar ciphertext without guessing.
+              Shift A–Z / a–z. Use shift 13 for ROT13, or enable brute-force of all non-zero shifts.
             </p>
+            <h3>AES Encrypt/Decrypt</h3>
+            <p>
+              AES-CBC + PKCS7 via <code>crypto-js</code>. Key/IV as UTF-8 or hex; ciphertext is Base64.
+              For CTF / lab use - not a substitute for authenticated encryption in production.
+            </p>
+            <h3>RC4</h3>
+            <p>Classic stream cipher (crypto-js Base64 ciphertext). Useful for legacy malware / CTF blobs.</p>
           </div></div>
         </section>
 
@@ -805,16 +817,60 @@
           <button type="button" class="block-toggle" aria-expanded="false">
             <span>
               <p class="block-title">// hashing</p>
-              <p class="block-sub">MD5 · SHA-1 · SHA-256</p>
+              <p class="block-sub">MD5 · SHA-1 · SHA-256 · HMAC</p>
             </span>
             <span class="chevron" aria-hidden>▸</span>
           </button>
           <div class="block-body"><div class="block-body-inner">
             <p>
               Fingerprint strings for IOC matching, challenge verification, or comparing dumps.
-              Implemented via <code>crypto-js</code> (vetted library - not for storing new passwords).
-              Pair with IOC Extract to pull hashes from free text.
+              Large digests use a Web Worker when available. HMAC-SHA256/SHA1/MD5 with a secret key.
+              Implemented via <code>crypto-js</code> - not for storing new passwords.
             </p>
+          </div></div>
+        </section>
+
+        <!-- DATA FORMAT -->
+        <section class="block" id="data-format" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// data format</p>
+              <p class="block-sub">Gzip · Zlib · Deflate · Hex Dump · Magic · JSON Path</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <table class="op-table">
+              <thead><tr><th>Op</th><th>Function</th></tr></thead>
+              <tbody>
+                <tr><td>Gunzip / Gzip</td><td>RFC 1952 decompress/compress. Often chained after Base64.</td></tr>
+                <tr><td>Zlib Inflate / Deflate</td><td>RFC 1950 zlib streams.</td></tr>
+                <tr><td>Raw Inflate / Deflate</td><td>RFC 1951 without zlib/gzip headers.</td></tr>
+                <tr><td>Hex Dump</td><td>Classic offset + hex + ASCII view (file drops arm this automatically).</td></tr>
+                <tr><td>Magic Bytes</td><td>Identify gzip, ZIP, ELF, PE, PNG, JPEG, PDF from head bytes.</td></tr>
+                <tr><td>JSON Path</td><td>Parse JSON and pull <code>$.a.b</code> / <code>items[0].id</code> style paths.</td></tr>
+              </tbody>
+            </table>
+          </div></div>
+        </section>
+
+        <!-- EXTRACTORS -->
+        <section class="block" id="extractors" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// extractors</p>
+              <p class="block-sub">Regex Extract · Find/Replace</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <table class="op-table">
+              <thead><tr><th>Op</th><th>Function</th></tr></thead>
+              <tbody>
+                <tr><td>Regex Extract</td><td>Global match list (full or capture groups). Shape / match budgets apply.</td></tr>
+                <tr><td>Find / Replace</td><td>Regex or literal replace with flags.</td></tr>
+              </tbody>
+            </table>
           </div></div>
         </section>
 
@@ -902,6 +958,9 @@
               <div class="card"><h4>Download recipe</h4><p><code>.json</code> file + optional history save.</p></div>
               <div class="card"><h4>Download output</h4><p>Decoded result as <code>.txt</code> (also ↓ Out on Output).</p></div>
               <div class="card"><h4>Copy output</h4><p>Result to clipboard for tickets / chat.</p></div>
+              <div class="card"><h4>Case report</h4><p>Markdown export of recipe + I/O (+ fork). Print to PDF.</p></div>
+              <div class="card"><h4>Named library</h4><p>Save/load/delete named recipes on this device.</p></div>
+              <div class="card"><h4>Fork snapshot</h4><p>Baseline for Output Diff.</p></div>
               <div class="card"><h4>Import / history</h4><p>Paste JSON or reload a recent local recipe.</p></div>
             </div>
           </div></div>
@@ -978,17 +1037,17 @@
               <li>Flag-aware UI (highlight + detector + chain ranking)</li>
               <li>Hardened client UX (ReDoS / size guards, CSP, no-input share links)</li>
               <li>Modern CTF chrome with themes and guided SOP/tour</li>
+              <li>CyberChef-class codecs: Gzip/Zlib/Deflate, Base32/58/85, HTML entities, Punycode</li>
+              <li>AES-CBC, RC4, HMAC; Hex Dump + magic bytes; Regex Extract / Find-Replace / JSON Path</li>
+              <li>Magic multi-step chains, file drop, named library, fork/diff, Markdown case report</li>
+              <li>Web Workers for XOR brute and large hashes</li>
             </ul>
-            <h3>High-value features to add (CyberChef-class)</h3>
+            <h3>Still on the wishlist</h3>
             <div class="grid">
-              <div class="card"><h4>More codecs</h4><p>Gzip/deflate/zlib standalone, Base32/58/85, Morse, HTML entities, Punycode, JWT forge.</p></div>
-              <div class="card"><h4>Binary / files</h4><p>Drop files, hex dump viewer, magic-byte detect, PE/ELF light parse.</p></div>
-              <div class="card"><h4>Bake vs Dish</h4><p>Named recipe library, fork/diff two chains, “bake” snapshot of I/O pairs.</p></div>
-              <div class="card"><h4>Regex / extract</h4><p>General Regex Extract, Find/Replace, JSON path / jq-lite.</p></div>
-              <div class="card"><h4>Crypto depth</h4><p>AES/RC4 with key UI, RSA PEM paste (careful UX), HMAC standalone.</p></div>
-              <div class="card"><h4>Workers everywhere</h4><p>Offload XOR brute, hashing of large blobs, and gzip to Web Workers.</p></div>
-              <div class="card"><h4>Magic deeper</h4><p>CyberChef-like multi-step “Magic” that proposes full recipes, not just one op.</p></div>
-              <div class="card"><h4>Collaborative IR</h4><p>Case notes pane, timeline of transforms, export PDF/Markdown report.</p></div>
+              <div class="card"><h4>More codecs</h4><p>Morse, JWT forge, protobuf / MessagePack light decode.</p></div>
+              <div class="card"><h4>Binary depth</h4><p>PE/ELF light parse, disassembly stubs, entropy graph.</p></div>
+              <div class="card"><h4>RSA / PEM</h4><p>Careful paste UX for public-key CTF challenges.</p></div>
+              <div class="card"><h4>Collaborative IR</h4><p>Case notes pane, timeline of transforms, richer PDF export.</p></div>
             </div>
           </div></div>
         </section>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { buildShareUrl, recipeToJson, recipeFromJson } from '../core/recipe-serializer'
 import { copyText, downloadTextFile } from '../core/export'
+import { downloadCaseReport } from '../core/case-report'
 import type { Recipe } from '../core/types'
 import { useAppStore } from '../store/useAppStore'
 
@@ -16,11 +17,21 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
   const saveRecipeToHistory = useAppStore((s) => s.saveRecipeToHistory)
   const recipeHistory = useAppStore((s) => s.recipeHistory)
   const loadHistoryEntry = useAppStore((s) => s.loadHistoryEntry)
+  const namedLibrary = useAppStore((s) => s.namedLibrary)
+  const saveNamedRecipe = useAppStore((s) => s.saveNamedRecipe)
+  const loadNamedRecipe = useAppStore((s) => s.loadNamedRecipe)
+  const deleteNamedRecipe = useAppStore((s) => s.deleteNamedRecipe)
+  const captureForkSnapshot = useAppStore((s) => s.captureForkSnapshot)
+  const clearForkSnapshot = useAppStore((s) => s.clearForkSnapshot)
+  const forkSnapshot = useAppStore((s) => s.forkSnapshot)
   const recipeLength = useAppStore((s) => s.recipe.length)
   const input = useAppStore((s) => s.input)
   const outputText = useAppStore((s) => s.outputText)
   const recipe = useAppStore((s) => s.recipe)
+  const flagPattern = useAppStore((s) => s.flagPattern)
+  const lastRunMs = useAppStore((s) => s.lastRunMs)
   const [importJson, setImportJson] = useState('')
+  const [libraryName, setLibraryName] = useState('')
   const [message, setMessage] = useState<string | null>(null)
 
   const display = recipe.length === 0 ? input : outputText
@@ -92,6 +103,29 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
     onDone?.()
   }
 
+  const saveLibrary = () => {
+    if (!requireRecipe()) return
+    if (!libraryName.trim()) {
+      showMessage('enter a library name')
+      return
+    }
+    saveNamedRecipe(libraryName)
+    setLibraryName('')
+    showMessage('saved to named library')
+  }
+
+  const exportReport = () => {
+    downloadCaseReport({
+      input,
+      output: display,
+      recipe: recipeFromStore(),
+      flagPattern,
+      lastRunMs,
+      forkSnapshot,
+    })
+    showMessage('case report downloaded (.md)')
+  }
+
   return (
     <div className="space-y-3">
       <p className="font-code text-[11px] text-[var(--text-muted)]">
@@ -131,6 +165,82 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
           <strong>Save history</strong>
           <span>this device only</span>
         </button>
+        <button type="button" className="cb-share-action" onClick={exportReport}>
+          <strong>Case report</strong>
+          <span>Markdown · print to PDF</span>
+        </button>
+        <button
+          type="button"
+          className="cb-share-action"
+          onClick={() => {
+            captureForkSnapshot()
+            showMessage('fork baseline captured')
+          }}
+        >
+          <strong>Fork snapshot</strong>
+          <span>diff baseline for output</span>
+        </button>
+        {forkSnapshot != null && (
+          <button
+            type="button"
+            className="cb-share-action"
+            onClick={() => {
+              clearForkSnapshot()
+              showMessage('fork cleared')
+            }}
+          >
+            <strong>Clear fork</strong>
+            <span>remove diff baseline</span>
+          </button>
+        )}
+      </div>
+
+      <div>
+        <p className="mb-2 font-code text-[10px] uppercase tracking-[0.12em] text-[var(--text-dim)]">
+          named library
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            type="text"
+            value={libraryName}
+            onChange={(e) => setLibraryName(e.target.value)}
+            placeholder="recipe name..."
+            className="cb-field min-w-0 flex-1"
+          />
+          <button type="button" onClick={saveLibrary} className="cb-btn cb-btn-primary !text-[12px]">
+            Save
+          </button>
+        </div>
+        {namedLibrary.length > 0 && (
+          <div className="mt-2 flex max-h-28 flex-col gap-1 overflow-y-auto">
+            {namedLibrary.map((n) => (
+              <div key={n.id} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className="cb-menu-item !flex-1 !py-1.5"
+                  onClick={() => {
+                    loadNamedRecipe(n.id)
+                    showMessage(`loaded: ${n.name}`)
+                    onDone?.()
+                  }}
+                >
+                  {n.name}
+                </button>
+                <button
+                  type="button"
+                  className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[10px]"
+                  title="Delete"
+                  onClick={() => {
+                    deleteNamedRecipe(n.id)
+                    showMessage('deleted')
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">

@@ -1,18 +1,19 @@
 import { useMemo, useEffect, useState } from 'react'
-import { suggestOperations } from '../core/magic'
+import { suggestMagicChains } from '../core/magic-chains'
 import { useAppStore } from '../store/useAppStore'
 
 export function MagicSuggestions({ pulse = false }: { pulse?: boolean }) {
   const input = useAppStore((s) => s.input)
+  const loadRecipeSteps = useAppStore((s) => s.loadRecipeSteps)
   const addOperationToRecipe = useAppStore((s) => s.addOperationToRecipe)
-  const suggestions = useMemo(() => suggestOperations(input, 4), [input])
+  const chains = useMemo(() => suggestMagicChains(input, 4), [input])
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
     setVisible(true)
   }, [input])
 
-  if (!visible || input.trim().length === 0 || suggestions.length === 0) return null
+  if (!visible || input.trim().length === 0 || chains.length === 0) return null
 
   return (
     <div
@@ -21,7 +22,9 @@ export function MagicSuggestions({ pulse = false }: { pulse?: boolean }) {
       data-tour="magic-suggestions"
     >
       <div className="cb-suggest-head">
-        <p className="cb-suggest-title">// detect · {suggestions.length} hit{suggestions.length === 1 ? '' : 's'}</p>
+        <p className="cb-suggest-title">
+          // magic · {chains.length} chain{chains.length === 1 ? '' : 's'}
+        </p>
         <button
           type="button"
           className="cb-btn cb-btn-ghost !px-2 !py-0.5 !text-[10px]"
@@ -32,16 +35,22 @@ export function MagicSuggestions({ pulse = false }: { pulse?: boolean }) {
         </button>
       </div>
       <div className="cb-suggest-chips">
-        {suggestions.map((s) => (
+        {chains.map((c) => (
           <button
-            key={s.operationId}
+            key={c.id}
             type="button"
             className="cb-suggest-chip"
-            title={s.reason}
-            onClick={() => addOperationToRecipe(s.operationId)}
+            title={`${c.reason}${c.preview ? `\n→ ${c.preview}` : ''}`}
+            onClick={() => {
+              if (c.recipe.length === 1) {
+                addOperationToRecipe(c.recipe[0]!.operationId)
+              } else {
+                loadRecipeSteps(c.recipe)
+              }
+            }}
           >
-            {s.name}
-            <em>{(s.score * 100).toFixed(0)}%</em>
+            {c.name}
+            <em>{(c.score * 100).toFixed(0)}%</em>
           </button>
         ))}
       </div>

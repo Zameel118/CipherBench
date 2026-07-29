@@ -1,4 +1,5 @@
 import { stringFromCharCodes } from '../../core/char-codes'
+import { xorBruteForceAsync } from '../../core/heavy-compute'
 import { bruteForceInputTooLarge } from '../../core/input-limits'
 import type { Operation } from '../../core/types'
 
@@ -39,12 +40,27 @@ function xorWithKey(text: string, keyBytes: number[]): string {
   return stringFromCharCodes(out)
 }
 
+function xorBruteSync(raw: string) {
+  const candidates: { key: number; text: string; score: number }[] = []
+  for (let k = 0; k < 256; k++) {
+    const decoded = xorWithKey(raw, [k])
+    candidates.push({ key: k, text: decoded, score: printableRatio(decoded) })
+  }
+  candidates.sort((a, b) => b.score - a.score || a.key - b.key)
+  return candidates
+    .map(
+      (c) =>
+        `key 0x${c.key.toString(16).padStart(2, '0')} (${c.key}) score ${c.score.toFixed(3)}: ${c.text}`,
+    )
+    .join('\n')
+}
+
 export const xorCipher: Operation = {
   id: 'xor-cipher',
   name: 'XOR',
   category: 'Encryption',
   description:
-    'XOR each byte with a single-byte or repeating key. Optional single-byte brute force with printable scores.',
+    'XOR each byte with a single-byte or repeating key. Optional single-byte brute force (Web Worker when available).',
   params: [
     {
       name: 'mode',
@@ -74,17 +90,7 @@ export const xorCipher: Operation = {
       if (sizeError) {
         return { data: raw, type: 'string', error: sizeError }
       }
-      const candidates: { key: number; text: string; score: number }[] = []
-      for (let k = 0; k < 256; k++) {
-        const decoded = xorWithKey(raw, [k])
-        candidates.push({ key: k, text: decoded, score: printableRatio(decoded) })
-      }
-      candidates.sort((a, b) => b.score - a.score || a.key - b.key)
-      const lines = candidates.map(
-        (c) =>
-          `key 0x${c.key.toString(16).padStart(2, '0')} (${c.key}) score ${c.score.toFixed(3)}: ${c.text}`,
-      )
-      return { data: lines.join('\n'), type: 'string' }
+      return { data: xorBruteSync(raw), type: 'string' }
     }
 
     const mode = String(params.mode ?? 'single-byte')
@@ -112,5 +118,20 @@ export const xorCipher: Operation = {
 
     const keyBytes = [...keyStr].map((ch) => ch.charCodeAt(0) & 0xff)
     return { data: xorWithKey(raw, keyBytes), type: 'string' }
+  },
+  runAsync: async (input, params) => {
+    if (params.bruteForceSingleByte !== true) {
+      return xorCipher.run!(input, params)
+    }
+    const raw = input.data
+    if (raw.length === 0) return { data: '', type: 'string' }
+    const sizeError = bruteForceInputTooLarge(raw.length)
+    if (sizeError) return { data: raw, type: 'string', error: sizeError }
+    try {
+      const lines = await xorBruteForceAsync(raw)
+      return { data: lines, type: 'string' }
+    } catch {
+      return { data: xorBruteSync(raw), type: 'string' }
+    }
   },
 }

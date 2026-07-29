@@ -292,8 +292,10 @@ body,
   transition: background 0.25s ease;
 }
 
-.cb-io-pane:focus-within {
-  background: color-mix(in srgb, var(--accent-dim) 40%, transparent);
+.cb-io-pane.cb-drop-target {
+  outline: 1px dashed var(--accent-border);
+  outline-offset: -4px;
+  background: var(--accent-dim);
 }
 
 .cb-status-tray {

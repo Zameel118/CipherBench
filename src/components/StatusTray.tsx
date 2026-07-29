@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { findFlagMatches } from '../core/flag-pattern'
-import { suggestOperations } from '../core/magic'
+import { suggestMagicChains } from '../core/magic-chains'
 import { countIocs } from '../operations/soc-tools/ioc-extract'
 import { useAppStore } from '../store/useAppStore'
 
@@ -18,7 +18,7 @@ export function StatusTray({ onFocusSuggestions }: { onFocusSuggestions: () => v
     [display, flagPattern],
   )
   const iocCount = useMemo(() => countIocs(display), [display])
-  const suggestions = useMemo(() => suggestOperations(input, 4), [input])
+  const suggestions = useMemo(() => suggestMagicChains(input, 4), [input])
 
   return (
     <div className="cb-status-tray">

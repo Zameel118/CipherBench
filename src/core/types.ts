@@ -32,6 +32,11 @@ export interface Operation {
   description: string
   params: OperationParam[]
   run: (input: OperationInput, params: Record<string, string | number | boolean>) => OperationOutput
+  /** Optional async path (Web Workers). Recipe engine prefers this when present. */
+  runAsync?: (
+    input: OperationInput,
+    params: Record<string, string | number | boolean>,
+  ) => Promise<OperationOutput>
   detectable?: boolean
   detectConfidence?: (input: string) => number // 0-1 heuristic, used by Magic auto-detect
 }

@@ -1,8 +1,35 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { compileFlagRegex } from '../core/flag-pattern'
 import { copyText, downloadTextFile } from '../core/export'
 import { useAppStore } from '../store/useAppStore'
 import { FlagHighlight } from './FlagHighlight'
+
+function lineDiffSummary(baseline: string, current: string): string {
+  const a = baseline.split('\n')
+  const b = current.split('\n')
+  const max = Math.max(a.length, b.length)
+  const lines: string[] = []
+  let shown = 0
+  for (let i = 0; i < max && shown < 40; i++) {
+    const left = a[i]
+    const right = b[i]
+    if (left === right) continue
+    if (left !== undefined && right === undefined) {
+      lines.push(`- ${left}`)
+      shown++
+    } else if (left === undefined && right !== undefined) {
+      lines.push(`+ ${right}`)
+      shown++
+    } else {
+      lines.push(`- ${left}`)
+      lines.push(`+ ${right}`)
+      shown += 2
+    }
+  }
+  if (shown === 0) return '(no line differences vs fork)'
+  if (max > 40 && shown >= 40) lines.push('… truncated')
+  return lines.join('\n')
+}
 
 export function OutputPane() {
   const outputText = useAppStore((s) => s.outputText)
@@ -12,11 +39,20 @@ export function OutputPane() {
   const flagPattern = useAppStore((s) => s.flagPattern)
   const setFlagPattern = useAppStore((s) => s.setFlagPattern)
   const flagPatternError = useAppStore((s) => s.flagPatternError)
+  const forkSnapshot = useAppStore((s) => s.forkSnapshot)
+  const captureForkSnapshot = useAppStore((s) => s.captureForkSnapshot)
+  const clearForkSnapshot = useAppStore((s) => s.clearForkSnapshot)
   const [toast, setToast] = useState<string | null>(null)
   const [wrap, setWrap] = useState(true)
+  const [showDiff, setShowDiff] = useState(false)
 
   const display = recipe.length === 0 ? input : outputText
   const { error: patternCompileError } = compileFlagRegex(flagPattern)
+
+  const diffText = useMemo(() => {
+    if (forkSnapshot == null) return null
+    return lineDiffSummary(forkSnapshot, display)
+  }, [forkSnapshot, display])
 
   useEffect(() => {
     useAppStore.setState({ flagPatternError: patternCompileError })
@@ -63,6 +99,40 @@ export function OutputPane() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              captureForkSnapshot()
+              flash('forked')
+            }}
+            className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]"
+            title="Capture output as fork baseline"
+          >
+            Fork
+          </button>
+          {forkSnapshot != null && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowDiff((v) => !v)}
+                className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]"
+                title="Show line diff vs fork"
+              >
+                {showDiff ? 'HideΔ' : 'Diff'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  clearForkSnapshot()
+                  setShowDiff(false)
+                  flash('cleared')
+                }}
+                className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]"
+              >
+                Unfork
+              </button>
+            </>
+          )}
+          <button
+            type="button"
             onClick={copyOutput}
             disabled={!display}
             className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]"
@@ -94,6 +164,12 @@ export function OutputPane() {
         <div className="px-4 py-2 text-sm text-[var(--danger)]" role="alert">
           {outputError}
         </div>
+      )}
+
+      {showDiff && diffText != null && (
+        <pre className="cb-pre !max-h-[28%] !border-b !border-[var(--border)] !text-[var(--warn)]">
+          {diffText}
+        </pre>
       )}
 
       <pre

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { DEFAULT_FLAG_PATTERN } from '../core/flag-pattern'
 import { parseRecipeFromLocationSearch } from '../core/recipe-serializer'
-import { runRecipe } from '../core/recipe-engine'
+import { runRecipeAsync } from '../core/recipe-engine'
 import {
   applyThemeToDocument,
   loadStoredTheme,
@@ -12,13 +12,19 @@ import type { Recipe, RecipeStep } from '../core/types'
 import { operationsMap } from '../operations'
 
 export interface RecipeStepInstance extends RecipeStep {
-  /** Stable id for React keys and drag-and-drop. */
   instanceId: string
 }
 
 export interface RecipeHistoryEntry {
   id: string
   label: string
+  recipe: Recipe
+  savedAt: number
+}
+
+export interface NamedRecipe {
+  id: string
+  name: string
   recipe: Recipe
   savedAt: number
 }
@@ -35,12 +41,16 @@ export interface AppState {
   flagPattern: string
   flagPatternError: string | undefined
   recipeHistory: RecipeHistoryEntry[]
+  namedLibrary: NamedRecipe[]
+  /** Snapshot of output for fork/diff */
+  forkSnapshot: string | null
   setInput: (value: string) => void
   setOperationSearch: (value: string) => void
   setTheme: (theme: ThemeId) => void
   setAutoRun: (value: boolean) => void
   setFlagPattern: (pattern: string) => void
   addOperationToRecipe: (operationId: string) => void
+  loadRecipeSteps: (recipe: Recipe) => void
   removeRecipeStep: (instanceId: string) => void
   updateStepParams: (
     instanceId: string,
@@ -52,12 +62,18 @@ export interface AppState {
   swapInputOutput: () => void
   loadRecipe: (recipe: Recipe) => void
   hydrateRecipeFromUrl: () => void
-  runCurrentRecipe: () => void
+  runCurrentRecipe: () => Promise<void>
   saveRecipeToHistory: () => void
   loadHistoryEntry: (id: string) => void
+  saveNamedRecipe: (name: string) => void
+  loadNamedRecipe: (id: string) => void
+  deleteNamedRecipe: (id: string) => void
+  captureForkSnapshot: () => void
+  clearForkSnapshot: () => void
 }
 
 const HISTORY_KEY = 'cipherbench_recipe_history'
+const LIBRARY_KEY = 'cipherbench_named_library'
 
 function loadHistory(): RecipeHistoryEntry[] {
   try {
@@ -73,6 +89,25 @@ function loadHistory(): RecipeHistoryEntry[] {
 function persistHistory(entries: RecipeHistoryEntry[]) {
   try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 8)))
+  } catch {
+    // ignore
+  }
+}
+
+function loadLibrary(): NamedRecipe[] {
+  try {
+    const raw = localStorage.getItem(LIBRARY_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as NamedRecipe[]
+    return Array.isArray(parsed) ? parsed.slice(0, 24) : []
+  } catch {
+    return []
+  }
+}
+
+function persistLibrary(entries: NamedRecipe[]) {
+  try {
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(entries.slice(0, 24)))
   } catch {
     // ignore
   }
@@ -129,6 +164,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   flagPattern: DEFAULT_FLAG_PATTERN,
   flagPatternError: undefined,
   recipeHistory: loadHistory(),
+  namedLibrary: loadLibrary(),
+  forkSnapshot: null,
 
   setInput: (value) => set({ input: value }),
 
@@ -158,14 +195,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       params: defaultParamsForOperation(operationId),
     }
     set((state) => ({ recipe: [...state.recipe, step] }))
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
+  },
+
+  loadRecipeSteps: (recipe) => {
+    set({ recipe: recipeToInstances(recipe) })
+    void get().runCurrentRecipe()
   },
 
   removeRecipeStep: (instanceId) => {
     set((state) => ({
       recipe: state.recipe.filter((s) => s.instanceId !== instanceId),
     }))
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   updateStepParams: (instanceId, params) => {
@@ -176,7 +218,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           : s,
       ),
     }))
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   reorderRecipe: (fromIndex, toIndex) => {
@@ -194,29 +236,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       next.splice(toIndex, 0, moved!)
       return { recipe: next }
     })
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   clearRecipe: () => {
     set({ recipe: [], outputText: '', outputError: undefined, lastRunMs: null })
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   resetInput: () => {
     set({ input: '', outputText: '', outputError: undefined, lastRunMs: null })
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   swapInputOutput: () => {
     const { input, outputText, recipe } = get()
     const display = recipe.length === 0 ? input : outputText
     set({ input: display })
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   loadRecipe: (recipe) => {
     set({ recipe: recipeToInstances(recipe) })
-    get().runCurrentRecipe()
+    void get().runCurrentRecipe()
   },
 
   hydrateRecipeFromUrl: () => {
@@ -227,10 +269,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  runCurrentRecipe: () => {
+  runCurrentRecipe: async () => {
     const { input, recipe } = get()
     const started = performance.now()
-    const result = runRecipe(input, recipeToSteps(recipe), operationsMap)
+    const result = await runRecipeAsync(input, recipeToSteps(recipe), operationsMap)
     set({
       outputText: result.output.data,
       outputError: result.output.error,
@@ -260,4 +302,38 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!entry) return
     get().loadRecipe(entry.recipe)
   },
+
+  saveNamedRecipe: (name) => {
+    const trimmed = name.trim()
+    if (!trimmed || get().recipe.length === 0) return
+    const entry: NamedRecipe = {
+      id: newInstanceId(),
+      name: trimmed,
+      recipe: recipeToSteps(get().recipe),
+      savedAt: Date.now(),
+    }
+    const next = [entry, ...get().namedLibrary.filter((n) => n.name !== trimmed)]
+    persistLibrary(next)
+    set({ namedLibrary: next })
+  },
+
+  loadNamedRecipe: (id) => {
+    const entry = get().namedLibrary.find((n) => n.id === id)
+    if (!entry) return
+    get().loadRecipe(entry.recipe)
+  },
+
+  deleteNamedRecipe: (id) => {
+    const next = get().namedLibrary.filter((n) => n.id !== id)
+    persistLibrary(next)
+    set({ namedLibrary: next })
+  },
+
+  captureForkSnapshot: () => {
+    const { input, outputText, recipe } = get()
+    const display = recipe.length === 0 ? input : outputText
+    set({ forkSnapshot: display })
+  },
+
+  clearForkSnapshot: () => set({ forkSnapshot: null }),
 }))

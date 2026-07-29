@@ -91,3 +91,77 @@ export function runRecipe(
     success: true,
   }
 }
+
+/** Async recipe runner - uses `runAsync` when an operation provides it (workers). */
+export async function runRecipeAsync(
+  input: string,
+  recipe: Recipe,
+  operations: Map<string, Operation> | Record<string, Operation>,
+): Promise<RecipeRunResult> {
+  const lookup =
+    operations instanceof Map
+      ? operations
+      : new Map(Object.entries(operations))
+
+  const steps: OperationOutput[] = []
+  let current: OperationInput = { data: input, type: 'string' }
+
+  if (recipe.length === 0) {
+    return {
+      output: { data: input, type: 'string' },
+      steps,
+      success: true,
+    }
+  }
+
+  for (const step of recipe) {
+    const op = lookup.get(step.operationId)
+    if (!op) {
+      const missing: OperationOutput = {
+        data: current.data,
+        type: current.type,
+        error: `Unknown operation: ${step.operationId}`,
+      }
+      steps.push(missing)
+      return { output: missing, steps, success: false }
+    }
+
+    const mergedParams: Record<string, string | number | boolean> = {}
+    for (const p of op.params) {
+      mergedParams[p.name] =
+        step.params[p.name] !== undefined ? step.params[p.name] : p.default
+    }
+    for (const [key, value] of Object.entries(step.params)) {
+      if (!(key in mergedParams)) {
+        mergedParams[key] = value
+      }
+    }
+
+    let result: OperationOutput
+    try {
+      result = op.runAsync
+        ? await op.runAsync(current, mergedParams)
+        : op.run(current, mergedParams)
+    } catch (err) {
+      result = {
+        data: current.data,
+        type: current.type,
+        error: err instanceof Error ? err.message : String(err),
+      }
+    }
+
+    steps.push(result)
+
+    if (result.error) {
+      return { output: result, steps, success: false }
+    }
+
+    current = { data: result.data, type: result.type }
+  }
+
+  return {
+    output: steps[steps.length - 1]!,
+    steps,
+    success: true,
+  }
+}
