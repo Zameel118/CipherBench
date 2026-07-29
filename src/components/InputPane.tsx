@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { MagicSuggestions } from './MagicSuggestions'
 
@@ -11,34 +11,43 @@ export function InputPane() {
   const resetInput = useAppStore((s) => s.resetInput)
 
   useEffect(() => {
-    const handle = window.setTimeout(() => {
-      runCurrentRecipe()
-    }, INPUT_DEBOUNCE_MS)
+    const handle = window.setTimeout(() => runCurrentRecipe(), INPUT_DEBOUNCE_MS)
     return () => window.clearTimeout(handle)
   }, [input, runCurrentRecipe])
 
+  const charCount = useMemo(() => input.length, [input])
+
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800/80 bg-[#0f1629]">
-      <header className="flex flex-shrink-0 items-center justify-between border-b border-slate-800/60 px-3 py-2">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-cyan-500/80 shadow-[0_0_6px_rgb(6_182_212/0.4)]" />
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Input</h2>
+    <section className="card glow-green flex min-h-0 flex-col">
+      <div className="card-header">
+        <div className="flex items-center gap-2.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
+          <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Input</h2>
         </div>
-        <button
-          type="button"
-          onClick={resetInput}
-          className="rounded px-2 py-0.5 text-[11px] text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300"
-        >
-          Clear
-        </button>
-      </header>
+        <div className="flex items-center gap-3">
+          {charCount > 0 && (
+            <span className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
+              {charCount.toLocaleString()}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={resetInput}
+            className="rounded-md px-3 py-1 text-xs font-semibold transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
       <MagicSuggestions />
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Paste ciphertext, logs, or encoded data…"
+        placeholder="Paste ciphertext, encoded data, JWTs, PowerShell commands, logs..."
         spellCheck={false}
-        className="min-h-0 flex-1 resize-none border-0 bg-transparent p-3 font-mono text-sm leading-relaxed text-emerald-300/90 outline-none placeholder:text-slate-600"
+        className="font-code min-h-0 flex-1 resize-none bg-transparent p-4 text-sm leading-relaxed outline-none"
+        style={{ color: '#66ffaa', caretColor: 'var(--accent)' }}
       />
     </section>
   )

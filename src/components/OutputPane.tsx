@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { compileFlagRegex } from '../core/flag-pattern'
 import { useAppStore } from '../store/useAppStore'
 import { FlagHighlight } from './FlagHighlight'
@@ -16,60 +16,67 @@ export function OutputPane() {
   const { error: patternCompileError } = compileFlagRegex(flagPattern)
 
   useEffect(() => {
-    useAppStore.setState({
-      flagPatternError: patternCompileError,
-    })
+    useAppStore.setState({ flagPatternError: patternCompileError })
   }, [flagPattern, patternCompileError])
 
+  const copyOutput = useCallback(async () => {
+    if (display) await navigator.clipboard.writeText(display)
+  }, [display])
+
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800/80 bg-[#0f1629]">
-      <header className="flex-shrink-0 border-b border-slate-800/60 px-3 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-amber-500/80 shadow-[0_0_6px_rgb(245_158_11/0.4)]" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Output</h2>
+    <section className="card flex min-h-0 flex-col">
+      <div className="card-header flex-col !items-start gap-2">
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#44aaff', boxShadow: '0 0 8px rgba(68,170,255,0.5)' }} />
+            <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#44aaff' }}>Output</h2>
           </div>
-          {recipe.length === 0 && (
-            <span className="text-[10px] text-slate-600">
-              passthrough
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {recipe.length === 0 && (
+              <span className="rounded-md px-2 py-0.5 text-xs font-medium" style={{ color: 'var(--text-muted)', background: 'var(--bg-elevated)' }}>
+                passthrough
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={copyOutput}
+              disabled={!display}
+              className="rounded-md px-3 py-1 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25"
+              style={{ color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+            >
+              Copy
+            </button>
+          </div>
         </div>
 
-        {/* Flag pattern input — compact */}
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-[10px] text-slate-500">Flag regex</span>
+        {/* Flag pattern */}
+        <div className="flex w-full items-center gap-2">
+          <span className="flex-shrink-0 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Flag regex</span>
           <input
             type="text"
             value={flagPattern}
             onChange={(e) => setFlagPattern(e.target.value)}
-            className="min-w-0 flex-1 rounded border border-slate-700/60 bg-slate-900/60 px-2 py-0.5 font-mono text-[11px] text-slate-300 outline-none transition-colors focus:border-cyan-700 focus:ring-1 focus:ring-cyan-800"
+            className="font-code min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs outline-none transition-colors"
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             spellCheck={false}
           />
         </div>
         {flagPatternError && (
-          <p className="mt-1 text-[10px] text-amber-400" role="status">
-            {flagPatternError}
-          </p>
+          <p className="text-xs font-medium" style={{ color: '#ffaa44' }}>{flagPatternError}</p>
         )}
-      </header>
+      </div>
 
       {outputError && recipe.length > 0 && (
-        <div
-          className="flex-shrink-0 border-b border-red-900/40 bg-red-950/30 px-3 py-1.5 text-xs text-red-400"
-          role="alert"
-        >
-          <span className="mr-1.5 font-mono text-red-500">✕</span>
+        <div className="flex items-center gap-2 px-4 py-2 text-sm" style={{ borderBottom: '1px solid var(--border)', color: 'var(--danger)', background: 'rgba(255,68,102,0.05)' }}>
+          <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           {outputError}
         </div>
       )}
 
-      <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-sm leading-relaxed text-sky-300/90">
-        {patternCompileError ? (
-          display
-        ) : (
-          <FlagHighlight text={display} pattern={flagPattern} />
-        )}
+      <pre className="font-code min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words p-4 text-sm leading-relaxed" style={{ color: '#aaccff' }}>
+        {patternCompileError ? display : <FlagHighlight text={display} pattern={flagPattern} />}
       </pre>
     </section>
   )

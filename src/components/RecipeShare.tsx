@@ -1,16 +1,11 @@
 import { useState } from 'react'
-import {
-  buildShareUrl,
-  recipeToJson,
-  recipeFromJson,
-} from '../core/recipe-serializer'
+import { buildShareUrl, recipeToJson, recipeFromJson } from '../core/recipe-serializer'
 import type { Recipe } from '../core/types'
 import { useAppStore } from '../store/useAppStore'
 
 function recipeFromStore(): Recipe {
   return useAppStore.getState().recipe.map(({ operationId, params }) => ({
-    operationId,
-    params: { ...params },
+    operationId, params: { ...params },
   }))
 }
 
@@ -26,68 +21,44 @@ export function RecipeShare() {
   }
 
   const copyJson = async () => {
-    const json = recipeToJson(recipeFromStore(), true)
-    await navigator.clipboard.writeText(json)
+    await navigator.clipboard.writeText(recipeToJson(recipeFromStore(), true))
     showMessage('Copied JSON')
   }
-
   const copyLink = async () => {
-    const url = buildShareUrl(recipeFromStore())
-    await navigator.clipboard.writeText(url)
+    await navigator.clipboard.writeText(buildShareUrl(recipeFromStore()))
     showMessage('Copied link')
   }
-
   const loadFromJson = () => {
     const { recipe, error } = recipeFromJson(importJson)
-    if (error || !recipe) {
-      showMessage(error ?? 'Failed to load recipe')
-      return
-    }
+    if (error || !recipe) { showMessage(error ?? 'Invalid JSON'); return }
     loadRecipe(recipe)
     setImportJson('')
     showMessage('Recipe loaded')
   }
 
+  const btnStyle = {
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-secondary)',
+  }
+
   return (
-    <div className="flex-shrink-0 border-t border-slate-800/60 px-3 py-2">
+    <div className="flex-shrink-0 px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
       <div className="flex items-center gap-2">
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={copyJson}
-            disabled={recipeLength === 0}
-            className="rounded border border-slate-700/40 bg-slate-900/50 px-2 py-0.5 text-[10px] text-slate-500 transition-colors hover:border-slate-600 hover:text-slate-300 disabled:opacity-30"
-          >
-            JSON
-          </button>
-          <button
-            type="button"
-            onClick={copyLink}
-            disabled={recipeLength === 0}
-            className="rounded border border-slate-700/40 bg-slate-900/50 px-2 py-0.5 text-[10px] text-slate-500 transition-colors hover:border-slate-600 hover:text-slate-300 disabled:opacity-30"
-          >
-            Link
-          </button>
-        </div>
+        <button type="button" onClick={copyJson} disabled={recipeLength === 0} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25" style={btnStyle}>JSON</button>
+        <button type="button" onClick={copyLink} disabled={recipeLength === 0} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25" style={btnStyle}>Link</button>
         <input
           type="text"
           value={importJson}
           onChange={(e) => setImportJson(e.target.value)}
-          placeholder="Paste recipe JSON…"
-          className="min-w-0 flex-1 rounded border border-slate-700/40 bg-slate-900/50 px-2 py-0.5 font-mono text-[10px] text-slate-400 outline-none transition-colors placeholder:text-slate-700 focus:border-cyan-700"
+          placeholder="Paste recipe JSON..."
+          className="font-code min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs outline-none"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
         />
-        <button
-          type="button"
-          onClick={loadFromJson}
-          className="rounded border border-slate-700/40 bg-slate-900/50 px-2 py-0.5 text-[10px] text-slate-500 transition-colors hover:border-slate-600 hover:text-slate-300"
-        >
-          Load
-        </button>
+        <button type="button" onClick={loadFromJson} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80" style={btnStyle}>Load</button>
       </div>
       {message && (
-        <p className="mt-1 text-[10px] text-cyan-500" role="status">
-          {message}
-        </p>
+        <p className="mt-1.5 text-xs font-semibold" style={{ color: 'var(--accent)' }}>{message}</p>
       )}
     </div>
   )

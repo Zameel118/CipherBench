@@ -6,33 +6,33 @@ export function MagicSuggestions() {
   const input = useAppStore((s) => s.input)
   const addOperationToRecipe = useAppStore((s) => s.addOperationToRecipe)
 
-  const suggestions = useMemo(
-    () => suggestOperations(input, 3),
-    [input],
-  )
+  const suggestions = useMemo(() => suggestOperations(input, 3), [input])
 
-  if (input.trim().length === 0 || suggestions.length === 0) {
-    return null
-  }
+  if (input.trim().length === 0 || suggestions.length === 0) return null
 
   return (
-    <div className="flex-shrink-0 border-b border-cyan-900/20 bg-cyan-950/20 px-3 py-1.5">
-      <p className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-600">
-        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <div className="flex-shrink-0 px-4 py-2.5" style={{ borderBottom: '1px solid var(--border)', background: 'rgba(0,255,136,0.03)' }}>
+      <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--accent-dim)' }}>
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        Auto-detect
+        Auto-detected
       </p>
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-2">
         {suggestions.map((s) => (
           <button
             key={s.operationId}
             type="button"
             onClick={() => addOperationToRecipe(s.operationId)}
-            className="rounded-full border border-cyan-800/40 bg-cyan-950/40 px-2 py-0.5 text-[11px] text-cyan-400 transition-all hover:border-cyan-600/50 hover:bg-cyan-900/30 hover:text-cyan-300"
+            className="rounded-lg px-3 py-1.5 text-sm font-medium transition-all hover:brightness-125"
+            style={{
+              background: 'rgba(0,255,136,0.08)',
+              border: '1px solid rgba(0,255,136,0.2)',
+              color: 'var(--accent)',
+            }}
           >
             {s.name}
-            <span className="ml-1 text-[9px] text-cyan-600">
+            <span className="font-code ml-2 text-xs" style={{ color: 'var(--accent-dim)' }}>
               {(s.score * 100).toFixed(0)}%
             </span>
           </button>

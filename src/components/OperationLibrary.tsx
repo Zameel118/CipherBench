@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react'
 import { getAllOperations, OPERATION_CATEGORIES } from '../operations'
 import { useAppStore } from '../store/useAppStore'
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Encoding: '⟨⟩',
-  Encryption: '🔐',
-  Hashing: '#',
-  'CTF Tools': '🚩',
-  'SOC Tools': '🛡',
+const CATEGORY_COLORS: Record<string, string> = {
+  Encoding: '#00ff88',
+  Encryption: '#ff6644',
+  Hashing: '#ffcc00',
+  'CTF Tools': '#ff44aa',
+  'SOC Tools': '#44aaff',
 }
 
 export function OperationLibrary() {
@@ -48,65 +48,86 @@ export function OperationLibrary() {
 
   return (
     <div className="flex min-h-0 flex-col">
-      <label className="sr-only" htmlFor="op-search">
-        Search operations
-      </label>
-      <div className="relative mb-2">
-        <svg className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+      <label className="sr-only" htmlFor="op-search">Search operations</label>
+      <div className="relative mb-3">
+        <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
         </svg>
         <input
           id="op-search"
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search ops…"
-          className="w-full rounded-md border border-slate-700/50 bg-slate-900/60 py-1.5 pl-7 pr-2 text-xs text-slate-200 outline-none transition-colors placeholder:text-slate-600 focus:border-cyan-700 focus:ring-1 focus:ring-cyan-800"
+          placeholder="Search operations..."
+          className="w-full rounded-lg py-2.5 pl-10 pr-3 text-sm font-medium outline-none transition-all"
+          style={{
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
+          }}
         />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {OPERATION_CATEGORIES.map((cat) => {
           const ops = byCategory.get(cat) ?? []
           if (ops.length === 0) return null
           const isCollapsed = collapsed.has(cat)
+          const color = CATEGORY_COLORS[cat] ?? 'var(--accent)'
           return (
-            <div key={cat} className="mb-1">
+            <div key={cat} className="mb-2">
               <button
                 type="button"
                 onClick={() => toggleCategory(cat)}
-                className="flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left transition-colors hover:bg-slate-800/50"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors"
+                style={{ background: isCollapsed ? 'transparent' : `${color}08` }}
               >
-                <span className="text-xs">{CATEGORY_ICONS[cat] ?? '●'}</span>
-                <span className="flex-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+                <span className="flex-1 text-xs font-bold uppercase tracking-[0.15em]" style={{ color }}>
                   {cat}
                 </span>
-                <span className="text-[10px] text-slate-600">{ops.length}</span>
-                <svg className={`h-3 w-3 text-slate-600 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <span className="font-code rounded-md px-1.5 py-0.5 text-xs font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
+                  {ops.length}
+                </span>
+                <svg
+                  className={`h-3 w-3 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                  style={{ color: 'var(--text-muted)' }}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"
+                >
                   <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
               {!isCollapsed && (
-                <ul className="mb-1 ml-1 space-y-0.5">
+                <div className="mt-0.5 space-y-0.5 pl-2">
                   {ops.map((op) => (
-                    <li key={op.id}>
-                      <button
-                        type="button"
-                        onClick={() => addOperationToRecipe(op.id)}
-                        className="group w-full rounded px-2 py-1 text-left transition-all hover:bg-cyan-950/40 hover:shadow-[inset_0_0_0_1px_rgb(6_182_212/0.2)]"
-                        title={op.description}
-                      >
-                        <span className="text-xs font-medium text-slate-300 group-hover:text-cyan-400">{op.name}</span>
-                      </button>
-                    </li>
+                    <button
+                      key={op.id}
+                      type="button"
+                      onClick={() => addOperationToRecipe(op.id)}
+                      className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all"
+                      style={{ color: 'var(--text-secondary)' }}
+                      title={op.description}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = `${color}10`
+                        e.currentTarget.style.color = color
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = 'var(--text-secondary)'
+                      }}
+                    >
+                      <svg className="h-3 w-3 flex-shrink-0 opacity-40 transition-opacity group-hover:opacity-100" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+                      </svg>
+                      <span className="text-sm font-medium">{op.name}</span>
+                    </button>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           )
         })}
         {filtered.length === 0 && (
-          <p className="py-4 text-center text-xs text-slate-600">No operations match.</p>
+          <p className="py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>No operations match.</p>
         )}
       </div>
     </div>
