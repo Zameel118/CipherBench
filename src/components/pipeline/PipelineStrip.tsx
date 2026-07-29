@@ -20,7 +20,7 @@ function ParamControl({
 
   if (type === 'boolean') {
     return (
-      <label className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+      <label className="flex items-center gap-2 font-code text-xs text-[var(--text-muted)]">
         <input
           type="checkbox"
           checked={Boolean(value)}
@@ -36,7 +36,7 @@ function ParamControl({
 
   if (type === 'select' && options) {
     return (
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
+      <label className="block font-code text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
         {paramName}
         <select
           value={String(value)}
@@ -57,7 +57,7 @@ function ParamControl({
 
   if (type === 'number') {
     return (
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
+      <label className="block font-code text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
         {paramName}
         <input
           type="number"
@@ -74,7 +74,7 @@ function ParamControl({
   }
 
   return (
-    <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
+    <label className="block font-code text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
       {paramName}
       <input
         type="text"
@@ -117,7 +117,7 @@ export function PipelineStrip({ layout: _layout = 'vertical' }: { layout?: 'hori
 
   return (
     <div className="flex h-full min-h-0 flex-col" data-tour="ops-chain-panel">
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+      <div className="cb-scroll min-h-0 flex-1 space-y-2">
         {recipe.map((step, index) => {
           const op = getOperation(step.operationId)
           if (!op) return null
@@ -130,44 +130,48 @@ export function PipelineStrip({ layout: _layout = 'vertical' }: { layout?: 'hori
               onDragOver={(e) => onDragOver(e, index)}
               onDragEnd={onDragEnd}
               className="cb-step"
+              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               data-dragging={dragIndex === index ? 'true' : undefined}
             >
               <div className="flex items-start justify-between gap-2">
                 <button
                   type="button"
                   className="min-w-0 flex-1 text-left"
+                  aria-expanded={isOpen}
                   onClick={() => setExpanded(isOpen ? null : step.instanceId)}
                 >
                   <p className="cb-step-title">
-                    {index + 1}. {op.name}
+                    {String(index + 1).padStart(2, '0')}. {op.name}
                   </p>
                   <p className="cb-step-meta">{stepSubtitle(op.name, step.params)}</p>
                 </button>
                 <button
                   type="button"
                   onClick={() => removeRecipeStep(step.instanceId)}
-                  className="text-[var(--text-dim)] hover:text-[var(--danger)]"
+                  className="font-code text-[var(--text-dim)] transition-colors hover:text-[var(--danger)]"
                   aria-label={`Remove ${op.name}`}
                 >
                   ×
                 </button>
               </div>
-              {isOpen && op.params.length > 0 && (
-                <div className="mt-3 grid gap-2 border-t border-[var(--border)] pt-3">
-                  {op.params.map((p) => (
-                    <ParamControl
-                      key={p.name}
-                      step={step}
-                      paramName={p.name}
-                      type={p.type}
-                      options={p.options}
-                      value={
-                        step.params[p.name] !== undefined
-                          ? step.params[p.name]!
-                          : p.default
-                      }
-                    />
-                  ))}
+              {op.params.length > 0 && (
+                <div className="cb-step-params" data-open={isOpen ? 'true' : 'false'}>
+                  <div className="cb-step-params-inner grid gap-2">
+                    {op.params.map((p) => (
+                      <ParamControl
+                        key={p.name}
+                        step={step}
+                        paramName={p.name}
+                        type={p.type}
+                        options={p.options}
+                        value={
+                          step.params[p.name] !== undefined
+                            ? step.params[p.name]!
+                            : p.default
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

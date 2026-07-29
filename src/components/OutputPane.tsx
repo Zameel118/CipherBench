@@ -26,7 +26,7 @@ export function OutputPane() {
   return (
     <section className="cb-io-pane" id="workbench-output" data-tour="decrypted-output">
       <div className="cb-pane-head">
-        <h2 className="cb-pane-title">Output</h2>
+        <h2 className="cb-pane-title">// output</h2>
         <div className="flex items-center gap-2">
           <input
             type="text"

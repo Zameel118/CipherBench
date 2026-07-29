@@ -17,7 +17,7 @@ export function InputPane() {
   return (
     <section className="cb-io-pane" id="workbench-input" data-tour="workbench-input">
       <div className="cb-pane-head">
-        <h2 className="cb-pane-title">Input</h2>
+        <h2 className="cb-pane-title">// input</h2>
         <button type="button" onClick={resetInput} className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]">
           Clear
         </button>

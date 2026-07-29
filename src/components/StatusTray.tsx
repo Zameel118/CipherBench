@@ -28,7 +28,7 @@ export function StatusTray({
     <div className="cb-status-tray">
       <span className="cb-status-item" data-active={flagCount > 0 ? 'true' : undefined}>
         <span aria-hidden>⚑</span>
-        {flagCount > 0 ? `${flagCount} flag${flagCount === 1 ? '' : 's'} found` : 'Flags found'}
+        {flagCount > 0 ? `${flagCount} flag${flagCount === 1 ? '' : 's'} found` : 'flags found'}
       </span>
       <button
         type="button"
@@ -38,7 +38,7 @@ export function StatusTray({
         title="Add IOC extract to recipe"
       >
         <span aria-hidden>🛡</span>
-        {iocCount > 0 ? `IOCs (${iocCount})` : 'IOCs'}
+        {iocCount > 0 ? `iocs (${iocCount})` : 'iocs'}
       </button>
       <button
         type="button"
@@ -48,7 +48,7 @@ export function StatusTray({
         title="Show decode suggestions"
       >
         <span aria-hidden>✦</span>
-        Suggestions{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
+        suggestions{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
       </button>
     </div>
   )

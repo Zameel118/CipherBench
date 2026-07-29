@@ -16,24 +16,38 @@ export function CommandHeader({
   onOpenTour: () => void
   onOpenSop: () => void
 }) {
-  const toggleTheme = useAppStore((s) => s.toggleTheme)
+  const setTheme = useAppStore((s) => s.setTheme)
   const theme = useAppStore((s) => s.theme)
   const [shareOpen, setShareOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
+  const themeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!shareOpen) return
+    if (!shareOpen && !themeOpen) return
     const onDoc = (e: MouseEvent) => {
-      if (!shareRef.current?.contains(e.target as Node)) setShareOpen(false)
+      const t = e.target as Node
+      if (shareOpen && !shareRef.current?.contains(t)) setShareOpen(false)
+      if (themeOpen && !themeRef.current?.contains(t)) setThemeOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShareOpen(false)
+        setThemeOpen(false)
+      }
     }
     document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
-  }, [shareOpen])
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [shareOpen, themeOpen])
 
   return (
     <header className="cb-header">
       <div className="cb-brand" data-tour="brand">
-        <Logo size={30} />
+        <Logo size={34} />
         <div>
           <h1 className="cb-brand-name">CipherBench</h1>
           <p className="cb-brand-sub">CTF / SOC workbench</p>
@@ -41,12 +55,16 @@ export function CommandHeader({
       </div>
 
       <div className="cb-header-actions">
-        <div className="relative" ref={shareRef}>
+        <div className="cb-dropdown" ref={shareRef}>
           <button
             type="button"
             className="cb-btn cb-btn-ghost"
             data-tour="transmit-panel"
-            onClick={() => setShareOpen((v) => !v)}
+            aria-expanded={shareOpen}
+            onClick={() => {
+              setShareOpen((v) => !v)
+              setThemeOpen(false)
+            }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
@@ -58,24 +76,29 @@ export function CommandHeader({
               />
             </svg>
             Share
+            <span className="text-[10px] opacity-60">{shareOpen ? '▴' : '▾'}</span>
           </button>
           {shareOpen && (
             <div className="cb-share-pop">
-              <p className="mb-3 text-xs text-[var(--text-muted)]">
-                Export or import recipes. Input text is never included.
+              <p className="mb-3 font-code text-[11px] text-[var(--text-muted)]">
+                Export / import recipes. Input never leaves the browser.
               </p>
               <RecipeShare />
             </div>
           )}
         </div>
 
-        <button
-          type="button"
-          className="cb-btn cb-btn-ghost"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? (
+        <div className="cb-dropdown" ref={themeRef}>
+          <button
+            type="button"
+            className="cb-btn cb-btn-ghost"
+            aria-expanded={themeOpen}
+            aria-label="Theme menu"
+            onClick={() => {
+              setThemeOpen((v) => !v)
+              setShareOpen(false)
+            }}
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
                 d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3Z"
@@ -85,19 +108,35 @@ export function CommandHeader({
                 strokeLinejoin="round"
               />
             </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.75" />
-              <path
-                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-              />
-            </svg>
+            Theme
+            <span className="text-[10px] opacity-60">{themeOpen ? '▴' : '▾'}</span>
+          </button>
+          {themeOpen && (
+            <div className="cb-menu" role="menu">
+              {(
+                [
+                  ['dark', 'Dark ops'],
+                  ['light', 'Light lab'],
+                  ['system', 'System'],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="menuitem"
+                  className="cb-menu-item"
+                  data-active={theme === value ? 'true' : undefined}
+                  onClick={() => {
+                    setTheme(value)
+                    setThemeOpen(false)
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           )}
-          Theme
-        </button>
+        </div>
 
         <button
           type="button"
@@ -122,7 +161,7 @@ export function CommandHeader({
           type="button"
           onClick={onExecute}
           disabled={recipeCount === 0}
-          className={`cb-btn cb-btn-primary ${runFlash ? 'opacity-90' : ''}`}
+          className={`cb-btn cb-btn-primary ${runFlash ? 'is-flash' : ''}`}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <path d="M8 5v14l11-7z" />

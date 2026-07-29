@@ -47,28 +47,32 @@ export function OperationLibrary({ compact: _compact = false }: { compact?: bool
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search"
+          placeholder="search ops..."
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="cb-scroll min-h-0 flex-1">
         {OPERATION_CATEGORIES.map((cat) => {
           const ops = byCategory.get(cat) ?? []
           if (ops.length === 0) return null
           const open = searching || activeCat === cat
           const label = cat.replace(' Tools', ' tools')
           return (
-            <div key={cat} className="mb-1">
+            <div key={cat} className="mb-0.5">
               <button
                 type="button"
                 className="cb-cat"
                 data-active={open && !searching ? 'true' : undefined}
+                aria-expanded={open}
                 onClick={() => setActiveCat((prev) => (prev === cat ? null : cat))}
               >
-                {label}
+                <span>{label}</span>
+                <span className="cb-cat-chevron" aria-hidden>
+                  ▸
+                </span>
               </button>
-              {open && (
-                <div className="pb-1">
+              <div className="cb-op-list" data-open={open ? 'true' : 'false'}>
+                <div className="cb-op-list-inner pb-1">
                   {ops.map((op) => (
                     <button
                       key={op.id}
@@ -81,15 +85,17 @@ export function OperationLibrary({ compact: _compact = false }: { compact?: bool
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           )
         })}
         {filtered.length === 0 && (
-          <p className="px-2 py-6 text-center text-xs text-[var(--text-dim)]">No operations match.</p>
+          <p className="px-2 py-6 text-center font-code text-xs text-[var(--text-dim)]">
+            no ops matched
+          </p>
         )}
       </div>
-      <p className="px-2 pt-2 text-[11px] text-[var(--text-dim)]">drag → recipe</p>
+      <p className="cb-hint px-2 pt-2">click → recipe</p>
     </div>
   )
 }

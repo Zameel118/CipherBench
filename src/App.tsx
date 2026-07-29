@@ -102,14 +102,14 @@ function App() {
 
       <div className="cb-main">
         <aside className="cb-col">
-          <div className="cb-col-label">Operations</div>
+          <div className="cb-col-label">// operations</div>
           <div className="cb-col-body">
             <OperationLibrary />
           </div>
         </aside>
 
         <aside className="cb-col">
-          <div className="cb-col-label">Recipe · {stepLabel}</div>
+          <div className="cb-col-label">// recipe · {stepLabel}</div>
           <div className="cb-col-body">
             <PipelineStrip layout="vertical" />
           </div>
@@ -127,6 +127,7 @@ function App() {
 
       <footer className="cb-footer">
         <span>
+          <span className="cb-live-dot" aria-hidden />
           {recipe.length} op{recipe.length !== 1 ? 's' : ''} armed
         </span>
         <div className="cb-footer-metrics">
@@ -139,7 +140,7 @@ function App() {
           <button
             type="button"
             onClick={() => setSopOpen(true)}
-            className="border-none bg-transparent p-0 text-[var(--text-dim)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+            className="border-none bg-transparent p-0 font-code text-[var(--text-dim)] underline-offset-2 transition-colors hover:text-[var(--accent)] hover:underline"
           >
             SOP
           </button>
