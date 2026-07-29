@@ -1,4 +1,6 @@
 import type { Operation } from '../core/types'
+import { bruteForceChain } from './ctf-tools/brute-force-chain'
+import { flagDetector } from './ctf-tools/flag-detector'
 import { base64Decode, base64Encode } from './encoding/base64'
 import { binaryToText, textToBinary } from './encoding/binary-text'
 import { hexDecode, hexEncode } from './encoding/hex'
@@ -39,6 +41,8 @@ const allOperations: Operation[] = [
   md5Hash,
   sha1Hash,
   sha256Hash,
+  flagDetector,
+  bruteForceChain,
 ]
 
 export const operationsMap: Map<string, Operation> = new Map(

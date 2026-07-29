@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useAppStore } from '../store/useAppStore'
+import { MagicSuggestions } from './MagicSuggestions'
 
 const INPUT_DEBOUNCE_MS = 200
 
@@ -28,6 +29,7 @@ export function InputPane() {
           Reset input
         </button>
       </header>
+      <MagicSuggestions />
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}

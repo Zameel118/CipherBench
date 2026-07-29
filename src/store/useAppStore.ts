@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { DEFAULT_FLAG_PATTERN } from '../core/flag-pattern'
+import { parseRecipeFromLocationSearch } from '../core/recipe-serializer'
 import { runRecipe } from '../core/recipe-engine'
 import type { Recipe, RecipeStep } from '../core/types'
 import { operationsMap } from '../operations'
@@ -14,8 +16,11 @@ export interface AppState {
   outputText: string
   outputError: string | undefined
   operationSearch: string
+  flagPattern: string
+  flagPatternError: string | undefined
   setInput: (value: string) => void
   setOperationSearch: (value: string) => void
+  setFlagPattern: (pattern: string) => void
   addOperationToRecipe: (operationId: string) => void
   removeRecipeStep: (instanceId: string) => void
   updateStepParams: (
@@ -25,6 +30,8 @@ export interface AppState {
   reorderRecipe: (fromIndex: number, toIndex: number) => void
   clearRecipe: () => void
   resetInput: () => void
+  loadRecipe: (recipe: Recipe) => void
+  hydrateRecipeFromUrl: () => void
   runCurrentRecipe: () => void
 }
 
@@ -51,16 +58,30 @@ function newInstanceId(): string {
   return `step-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+function recipeToInstances(recipe: Recipe): RecipeStepInstance[] {
+  return recipe.map((step) => ({
+    instanceId: newInstanceId(),
+    operationId: step.operationId,
+    params: { ...defaultParamsForOperation(step.operationId), ...step.params },
+  }))
+}
+
 export const useAppStore = create<AppState>((set, get) => ({
   input: '',
   recipe: [],
   outputText: '',
   outputError: undefined,
   operationSearch: '',
+  flagPattern: DEFAULT_FLAG_PATTERN,
+  flagPatternError: undefined,
 
   setInput: (value) => set({ input: value }),
 
   setOperationSearch: (value) => set({ operationSearch: value }),
+
+  setFlagPattern: (pattern) => {
+    set({ flagPattern: pattern, flagPatternError: undefined })
+  },
 
   addOperationToRecipe: (operationId) => {
     if (!operationsMap.has(operationId)) return
@@ -117,6 +138,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   resetInput: () => {
     set({ input: '', outputText: '', outputError: undefined })
     get().runCurrentRecipe()
+  },
+
+  loadRecipe: (recipe) => {
+    set({ recipe: recipeToInstances(recipe) })
+    get().runCurrentRecipe()
+  },
+
+  hydrateRecipeFromUrl: () => {
+    if (typeof window === 'undefined') return
+    const { recipe } = parseRecipeFromLocationSearch(window.location.search)
+    if (recipe) {
+      get().loadRecipe(recipe)
+    }
   },
 
   runCurrentRecipe: () => {

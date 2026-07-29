@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { getOperation } from '../operations'
 import { useAppStore, type RecipeStepInstance } from '../store/useAppStore'
 import { OperationLibrary } from './OperationLibrary'
+import { RecipeShare } from './RecipeShare'
 
 function ParamControl({
   step,
@@ -199,6 +200,7 @@ export function RecipeBuilder() {
           )}
         </div>
       </div>
+      <RecipeShare />
     </section>
   )
 }

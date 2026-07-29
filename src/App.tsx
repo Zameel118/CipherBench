@@ -1,8 +1,16 @@
+import { useEffect } from 'react'
 import { InputPane } from './components/InputPane'
 import { OutputPane } from './components/OutputPane'
 import { RecipeBuilder } from './components/RecipeBuilder'
+import { useAppStore } from './store/useAppStore'
 
 function App() {
+  const hydrateRecipeFromUrl = useAppStore((s) => s.hydrateRecipeFromUrl)
+
+  useEffect(() => {
+    hydrateRecipeFromUrl()
+  }, [hydrateRecipeFromUrl])
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-100">
       <header className="border-b border-slate-200 bg-white px-4 py-3">
