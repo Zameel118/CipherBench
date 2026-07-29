@@ -1,4 +1,5 @@
 import { Base64 } from 'js-base64'
+import { stringFromCharCodes } from '../../core/char-codes'
 import type { Operation } from '../../core/types'
 
 function normalizeAlphabetParam(params: Record<string, string | number | boolean>): 'standard' | 'url-safe' {
@@ -18,6 +19,19 @@ function base64DetectConfidence(input: string): number {
 }
 
 /**
+ * Convert Base64 payload to a pipeline string.
+ * Prefer UTF-8 when the bytes are valid UTF-8 (normal text).
+ * Fall back to latin1 so binary CTF blobs (XOR/gzip) stay byte-accurate like CyberChef.
+ */
+function bytesToPipelineString(bytes: Uint8Array): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return stringFromCharCodes(bytes)
+  }
+}
+
+/**
  * Base64 decode (From Base64).
  * Uses js-base64 rather than hand-rolled bit packing - alphabet edge cases
  * (padding, URL-safe alphabet) are easy to get wrong and hard to spot in review.
@@ -26,7 +40,8 @@ export const base64Decode: Operation = {
   id: 'base64-decode',
   name: 'From Base64',
   category: 'Encoding',
-  description: 'Decode a Base64-encoded string into plain text (UTF-8).',
+  description:
+    'Decode Base64 to text. Valid UTF-8 becomes Unicode; otherwise bytes are kept as latin1 (CyberChef-compatible for XOR/gzip chains).',
   params: [
     {
       name: 'alphabet',
@@ -71,8 +86,8 @@ export const base64Decode: Operation = {
     }
 
     try {
-      const decoded = Base64.decode(cleaned)
-      return { data: decoded, type: 'string' }
+      const bytes = Base64.toUint8Array(cleaned)
+      return { data: bytesToPipelineString(bytes), type: 'string' }
     } catch {
       return {
         data: raw,
@@ -102,10 +117,21 @@ export const base64Encode: Operation = {
     }
     const alphabet = normalizeAlphabetParam(params)
     try {
-      const encoded =
-        alphabet === 'url-safe'
-          ? Base64.encodeURI(input.data)
-          : Base64.encode(input.data)
+      // Prefer latin1 bytes when every code unit is <= 0xff (binary pipeline).
+      // Otherwise UTF-8-encode Unicode text (matches previous To Base64 behaviour).
+      let encoded: string
+      const isBinary = [...input.data].every((ch) => ch.charCodeAt(0) <= 0xff)
+      if (isBinary) {
+        const bytes = Uint8Array.from(input.data, (c) => c.charCodeAt(0) & 0xff)
+        encoded =
+          alphabet === 'url-safe'
+            ? Base64.fromUint8Array(bytes, true)
+            : Base64.fromUint8Array(bytes)
+      } else if (alphabet === 'url-safe') {
+        encoded = Base64.encodeURI(input.data)
+      } else {
+        encoded = Base64.encode(input.data)
+      }
       return { data: encoded, type: 'string' }
     } catch {
       return {

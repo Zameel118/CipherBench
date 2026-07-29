@@ -40,6 +40,18 @@ describe('base64-decode', () => {
     expect(result.error).toBeUndefined()
     expect(result.data).toBe(original)
   })
+
+  it('preserves binary bytes for XOR chains (CyberChef-compatible)', () => {
+    // Letter O (not zero): Reverse → From Base64 → XOR 0x8F
+    const input = 'jbe+q/6+m3+ru/K/uj/rqHO4vyv5nv/r8zv66j+rG/65uru9'
+    const reversed = [...input].reverse().join('')
+    const decoded = run(reversed)
+    expect(decoded.error).toBeUndefined()
+    const xored = [...decoded.data]
+      .map((ch) => String.fromCharCode(ch.charCodeAt(0) ^ 0x8f))
+      .join('')
+    expect(xored).toBe('yeah I guess this one was a bit evil')
+  })
 })
 
 describe('base64-encode', () => {
