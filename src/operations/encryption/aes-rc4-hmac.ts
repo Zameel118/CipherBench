@@ -1,6 +1,14 @@
 import CryptoJS from 'crypto-js'
 import type { Operation } from '../../core/types'
 
+const AES_DEFAULT_KEY = '0123456789abcdef'
+const AES_DEFAULT_IV = '0123456789abcdef'
+const RC4_DEFAULT_KEY = 'secret'
+const HMAC_DEFAULT_KEY = 'secret'
+
+const DEFAULT_KEY_WARNING =
+  ' [WARNING: using the default demo key -- not secure for real data]'
+
 function parseKey(key: string): CryptoJS.lib.WordArray {
   const trimmed = key.trim()
   if (/^(0x)?[0-9a-fA-F]+$/.test(trimmed) && trimmed.replace(/^0x/i, '').length % 2 === 0) {
@@ -22,14 +30,17 @@ export const aesCrypt: Operation = {
       default: 'decrypt',
       options: ['encrypt', 'decrypt'],
     },
-    { name: 'key', type: 'string', default: '0123456789abcdef' },
-    { name: 'iv', type: 'string', default: '0123456789abcdef' },
+    { name: 'key', type: 'string', default: AES_DEFAULT_KEY },
+    { name: 'iv', type: 'string', default: AES_DEFAULT_IV },
   ],
   run: (input, params) => {
     if (!input.data) return { data: '', type: 'string' }
     const direction = String(params.direction ?? 'decrypt')
-    const key = parseKey(String(params.key ?? ''))
-    const iv = parseKey(String(params.iv ?? ''))
+    const rawKey = String(params.key ?? '')
+    const rawIv = String(params.iv ?? '')
+    const key = parseKey(rawKey)
+    const iv = parseKey(rawIv)
+    const usingDefaults = rawKey === AES_DEFAULT_KEY || rawIv === AES_DEFAULT_IV
     try {
       if (direction === 'encrypt') {
         const enc = CryptoJS.AES.encrypt(input.data, key, {
@@ -37,7 +48,11 @@ export const aesCrypt: Operation = {
           mode: CryptoJS.mode.CBC,
           padding: CryptoJS.pad.Pkcs7,
         })
-        return { data: enc.toString(), type: 'string' }
+        const out = enc.toString()
+        return {
+          data: usingDefaults ? out + DEFAULT_KEY_WARNING : out,
+          type: 'string',
+        }
       }
       const dec = CryptoJS.AES.decrypt(input.data.trim(), key, {
         iv,
@@ -71,20 +86,25 @@ export const rc4Crypt: Operation = {
       default: 'decrypt',
       options: ['encrypt', 'decrypt'],
     },
-    { name: 'key', type: 'string', default: 'secret' },
+    { name: 'key', type: 'string', default: RC4_DEFAULT_KEY },
   ],
   run: (input, params) => {
     if (!input.data) return { data: '', type: 'string' }
-    const key = String(params.key ?? '')
+    const rawKey = String(params.key ?? '')
     const direction = String(params.direction ?? 'decrypt')
-    if (!key) {
+    if (!rawKey) {
       return { data: input.data, type: 'string', error: 'RC4 key cannot be empty' }
     }
+    const usingDefault = rawKey === RC4_DEFAULT_KEY
     try {
       if (direction === 'encrypt') {
-        return { data: CryptoJS.RC4.encrypt(input.data, key).toString(), type: 'string' }
+        const out = CryptoJS.RC4.encrypt(input.data, rawKey).toString()
+        return {
+          data: usingDefault ? out + DEFAULT_KEY_WARNING : out,
+          type: 'string',
+        }
       }
-      const dec = CryptoJS.RC4.decrypt(input.data.trim(), key)
+      const dec = CryptoJS.RC4.decrypt(input.data.trim(), rawKey)
       const text = dec.toString(CryptoJS.enc.Utf8)
       if (!text) {
         return {
@@ -112,18 +132,23 @@ export const hmacSign: Operation = {
       default: 'SHA256',
       options: ['SHA256', 'SHA1', 'MD5'],
     },
-    { name: 'key', type: 'string', default: 'secret' },
+    { name: 'key', type: 'string', default: HMAC_DEFAULT_KEY },
   ],
   run: (input, params) => {
     if (!input.data) return { data: '', type: 'string' }
-    const key = String(params.key ?? '')
+    const rawKey = String(params.key ?? '')
     const algorithm = String(params.algorithm ?? 'SHA256')
+    const usingDefault = rawKey === HMAC_DEFAULT_KEY
     try {
       let hash: CryptoJS.lib.WordArray
-      if (algorithm === 'SHA1') hash = CryptoJS.HmacSHA1(input.data, key)
-      else if (algorithm === 'MD5') hash = CryptoJS.HmacMD5(input.data, key)
-      else hash = CryptoJS.HmacSHA256(input.data, key)
-      return { data: hash.toString(CryptoJS.enc.Hex), type: 'string' }
+      if (algorithm === 'SHA1') hash = CryptoJS.HmacSHA1(input.data, rawKey)
+      else if (algorithm === 'MD5') hash = CryptoJS.HmacMD5(input.data, rawKey)
+      else hash = CryptoJS.HmacSHA256(input.data, rawKey)
+      const out = hash.toString(CryptoJS.enc.Hex)
+      return {
+        data: usingDefault ? out + DEFAULT_KEY_WARNING : out,
+        type: 'string',
+      }
     } catch {
       return { data: input.data, type: 'string', error: 'HMAC failed' }
     }

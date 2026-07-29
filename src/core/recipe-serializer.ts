@@ -55,10 +55,34 @@ export function recipeFromQueryValue(
   }
   try {
     const json = Base64.decode(value)
-    return recipeFromJson(json)
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(json)
+    } catch {
+      return { recipe: null, error: 'Invalid JSON in URL recipe' }
+    }
+    return validateSerializedRecipe(parsed, { fromUrl: true })
   } catch {
     return { recipe: null, error: 'Invalid recipe encoding in URL' }
   }
+}
+
+/** Param names that may contain secrets and should not be shared in URLs. */
+const SECRET_PARAM_NAMES = new Set(['key', 'iv', 'secret', 'password', 'passphrase'])
+
+/** Returns a list of operation names whose params contain potential secrets. */
+export function detectSecretParams(recipe: Recipe): string[] {
+  const ops: string[] = []
+  for (const step of recipe) {
+    const op = operationsMap.get(step.operationId)
+    for (const [name, value] of Object.entries(step.params)) {
+      if (SECRET_PARAM_NAMES.has(name) && typeof value === 'string' && value.length > 0) {
+        ops.push(op?.name ?? step.operationId)
+        break
+      }
+    }
+  }
+  return ops
 }
 
 export function buildShareUrl(recipe: Recipe, baseUrl?: string): string {
@@ -83,8 +107,15 @@ export function parseRecipeFromLocationSearch(
   return recipeFromQueryValue(value)
 }
 
+/** Max steps allowed from a URL-loaded recipe (DoS guard). */
+const MAX_URL_RECIPE_STEPS = 20
+
+/** Operations that should not auto-run from a URL (expensive / brute-force). */
+const BLOCKED_URL_OPS = new Set(['brute-force-chain'])
+
 function validateSerializedRecipe(
   parsed: unknown,
+  opts?: { fromUrl?: boolean },
 ): { recipe: Recipe | null; error?: string } {
   if (!parsed || typeof parsed !== 'object') {
     return { recipe: null, error: 'Recipe payload must be an object' }
@@ -98,6 +129,13 @@ function validateSerializedRecipe(
     return { recipe: null, error: 'Recipe steps must be an array' }
   }
 
+  if (opts?.fromUrl && obj.steps.length > MAX_URL_RECIPE_STEPS) {
+    return {
+      recipe: null,
+      error: `URL recipe has ${obj.steps.length} steps (max ${MAX_URL_RECIPE_STEPS}). Import it manually via Share > Import.`,
+    }
+  }
+
   const recipe: Recipe = []
   for (const step of obj.steps) {
     if (!step || typeof step !== 'object') {
@@ -106,6 +144,12 @@ function validateSerializedRecipe(
     const s = step as { operationId?: unknown; params?: unknown }
     if (typeof s.operationId !== 'string' || !operationsMap.has(s.operationId)) {
       return { recipe: null, error: `Unknown operation: ${String(s.operationId)}` }
+    }
+    if (opts?.fromUrl && BLOCKED_URL_OPS.has(s.operationId)) {
+      return {
+        recipe: null,
+        error: `URL recipes cannot include ${s.operationId} (expensive). Import manually.`,
+      }
     }
     if (s.params !== undefined && (typeof s.params !== 'object' || s.params === null)) {
       return { recipe: null, error: 'Step params must be an object' }

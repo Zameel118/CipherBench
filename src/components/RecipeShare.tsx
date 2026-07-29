@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { buildShareUrl, recipeToJson, recipeFromJson } from '../core/recipe-serializer'
+import { buildShareUrl, recipeToJson, recipeFromJson, detectSecretParams } from '../core/recipe-serializer'
 import { copyText, downloadTextFile } from '../core/export'
 import { downloadCaseReport } from '../core/case-report'
 import type { Recipe } from '../core/types'
@@ -58,7 +58,15 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
 
   const copyLink = async () => {
     if (!requireRecipe()) return
-    const ok = await copyText(buildShareUrl(recipeFromStore()))
+    const r = recipeFromStore()
+    const secrets = detectSecretParams(r)
+    if (secrets.length > 0) {
+      const proceed = window.confirm(
+        `The share URL will include secret params from: ${secrets.join(', ')}.\n\nAnyone with the link can see these keys. Continue?`,
+      )
+      if (!proceed) return
+    }
+    const ok = await copyText(buildShareUrl(r))
     showMessage(ok ? 'share link copied' : 'clipboard blocked')
   }
 

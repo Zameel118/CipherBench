@@ -1,5 +1,10 @@
 import type { Operation } from '../../core/types'
-import { MAX_REGEX_MATCHES, REGEX_WORKER_TIMEOUT_MS, validateFlagPattern } from '../../core/flag-pattern'
+import {
+  MAX_REGEX_MATCHES,
+  MAX_REGEX_SCAN_CHARS,
+  REGEX_WORKER_TIMEOUT_MS,
+  validateFlagPattern,
+} from '../../core/flag-pattern'
 
 export const regexExtract: Operation = {
   id: 'regex-extract',
@@ -22,8 +27,7 @@ export const regexExtract: Operation = {
     const flags = String(params.flags ?? 'g')
     const mode = String(params.output ?? 'full')
     const shapeErr = validateFlagPattern(pattern)
-    // Allow slightly more patterns than flags, but still reject nested quantifiers
-    if (shapeErr && /unsafe|nested|alternation|repeated/i.test(shapeErr)) {
+    if (shapeErr) {
       return { data: input.data, type: 'string', error: shapeErr }
     }
     if (!pattern) {
@@ -31,10 +35,14 @@ export const regexExtract: Operation = {
     }
     try {
       const re = new RegExp(pattern, flags.includes('g') ? flags : `${flags}g`)
+      const scanData =
+        input.data.length > MAX_REGEX_SCAN_CHARS
+          ? input.data.slice(0, MAX_REGEX_SCAN_CHARS)
+          : input.data
       const lines: string[] = []
       const started = performance.now()
       let count = 0
-      for (const m of input.data.matchAll(re)) {
+      for (const m of scanData.matchAll(re)) {
         if (++count > MAX_REGEX_MATCHES) break
         if (performance.now() - started > REGEX_WORKER_TIMEOUT_MS) break
         if (mode === 'groups' && m.length > 1) {
@@ -84,7 +92,7 @@ export const findReplace: Operation = {
         }
       }
       const shapeErr = validateFlagPattern(find)
-      if (shapeErr && /unsafe|nested|alternation|repeated/i.test(shapeErr)) {
+      if (shapeErr) {
         return { data: input.data, type: 'string', error: shapeErr }
       }
       return {
@@ -120,6 +128,9 @@ function getByPath(root: unknown, path: string): unknown {
   return cur
 }
 
+/** Max bytes for JSON Path input parsing (5 MB). */
+const JSON_PATH_MAX_INPUT = 5 * 1024 * 1024
+
 export const jsonPathQuery: Operation = {
   id: 'json-path',
   name: 'JSON Path',
@@ -141,6 +152,13 @@ export const jsonPathQuery: Operation = {
   },
   run: (input, params) => {
     if (!input.data.trim()) return { data: '', type: 'string' }
+    if (input.data.length > JSON_PATH_MAX_INPUT) {
+      return {
+        data: input.data,
+        type: 'string',
+        error: `JSON input too large for path query (${(input.data.length / 1024 / 1024).toFixed(1)} MB, max 5 MB)`,
+      }
+    }
     try {
       const json = JSON.parse(input.data)
       const path = String(params.path ?? '$')

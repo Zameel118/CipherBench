@@ -18,6 +18,9 @@ interface WorkerResponse {
   error?: string
 }
 
+/** Internal wall-clock budget (ms) to prevent runaway regex matching. */
+const WALL_CLOCK_BUDGET_MS = 200
+
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const { pattern, text, maxMatches } = event.data
   const response: WorkerResponse = { ok: false }
@@ -26,8 +29,10 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
     const matches: FlagMatchPayload[] = []
     const seen = new Set<string>()
     let count = 0
+    const started = performance.now()
     for (const match of text.matchAll(regex)) {
       if (++count > maxMatches) break
+      if (performance.now() - started > WALL_CLOCK_BUDGET_MS) break
       const textMatch = match[0]
       if (!textMatch || match.index === undefined) continue
       if (seen.has(textMatch)) continue

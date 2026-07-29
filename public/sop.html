@@ -8,12 +8,13 @@
       content="CipherBench SOP - CTF/SOC workbench guide matching the live app design. Features, operations, security, and workflow."
     />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <style>
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('./fonts/JetBrainsMono-Regular.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('./fonts/JetBrainsMono-Medium.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url('./fonts/JetBrainsMono-SemiBold.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('./fonts/JetBrainsMono-Bold.woff2') format('woff2'); }
+      @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('./fonts/SpaceGrotesk-Latin.woff2') format('woff2'); }
+    </style>
     <title>CipherBench · SOP</title>
     <style>
       :root {
@@ -39,72 +40,37 @@
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 
-      /* CTF terminal scrollbars — thin mint rail */
+      /* Scrollbars -- neutral dark rail, smooth transitions */
       * {
         scrollbar-width: thin;
-        scrollbar-color: color-mix(in srgb, var(--accent) 55%, #1a2820)
-          color-mix(in srgb, var(--bg-soft) 80%, transparent);
+        scrollbar-color: #3a3f4a #13161c;
       }
 
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
 
       ::-webkit-scrollbar-track {
-        background:
-          repeating-linear-gradient(
-            180deg,
-            transparent,
-            transparent 3px,
-            color-mix(in srgb, var(--accent) 4%, transparent) 3px,
-            color-mix(in srgb, var(--accent) 4%, transparent) 4px
-          ),
-          color-mix(in srgb, var(--bg) 55%, transparent);
-        border-left: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
-        box-shadow: inset 1px 0 0 color-mix(in srgb, var(--accent) 6%, transparent);
+        background: #13161c;
       }
 
       ::-webkit-scrollbar-thumb {
-        background: linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--accent) 70%, #0d1a12) 0%,
-          color-mix(in srgb, var(--accent-soft) 45%, #122018) 55%,
-          color-mix(in srgb, var(--accent) 55%, #0a1410) 100%
-        );
-        border-radius: 1px;
-        border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-        box-shadow:
-          0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent),
-          0 0 10px color-mix(in srgb, var(--accent) 22%, transparent);
-        transition:
-          background 0.2s ease,
-          box-shadow 0.25s ease,
-          border-color 0.2s ease;
+        background: #30353e;
+        border-radius: 3px;
+        transition: background 0.25s ease;
       }
 
       ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, var(--accent) 0%, var(--accent-soft) 100%);
-        border-color: color-mix(in srgb, var(--accent) 70%, transparent);
-        box-shadow:
-          0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
-          0 0 14px color-mix(in srgb, var(--accent) 45%, transparent),
-          0 0 28px color-mix(in srgb, var(--accent-soft) 20%, transparent);
+        background: #4a505c;
       }
 
       ::-webkit-scrollbar-thumb:active {
-        background: var(--accent);
-        box-shadow:
-          0 0 0 1px var(--accent),
-          0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+        background: #5c6370;
       }
 
       ::-webkit-scrollbar-corner {
-        background: transparent;
-      }
-
-      .toc-rail::-webkit-scrollbar-track {
-        border-left-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+        background: #13161c;
       }
 
       body {

@@ -18,7 +18,8 @@ export function downloadTextFile(filename: string, contents: string, mime = 'tex
   document.body.appendChild(a)
   a.click()
   a.remove()
-  URL.revokeObjectURL(url)
+  // Defer revocation so browsers (Firefox) have time to start the download
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 export function openSopInNewTab() {

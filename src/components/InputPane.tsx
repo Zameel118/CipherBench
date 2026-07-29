@@ -3,6 +3,7 @@ import { useAppStore } from '../store/useAppStore'
 import { MagicSuggestions } from './MagicSuggestions'
 import { shannonEntropyNormalized } from '../core/magic'
 import { detectMagic } from '../operations/data-format/hex-dump'
+import { fileTooLarge } from '../core/input-limits'
 
 const INPUT_DEBOUNCE_MS = 200
 
@@ -49,6 +50,11 @@ export function InputPane({ suggestPulse = false }: { suggestPulse?: boolean }) 
   const entropy = input.trim() ? shannonEntropyNormalized(input) : 0
 
   const ingestFile = async (file: File) => {
+    const sizeErr = fileTooLarge(file.size)
+    if (sizeErr) {
+      setFileHint(sizeErr)
+      return
+    }
     const buf = new Uint8Array(await file.arrayBuffer())
     const magic = detectMagic(buf)
     const asText = new TextDecoder('utf-8', { fatal: false }).decode(buf)

@@ -17,9 +17,14 @@ RUN npm run build
 # --- Production stage: serve static dist/ with nginx ---
 FROM nginx:alpine AS serve
 
+RUN addgroup -S appgrp && adduser -S appusr -G appgrp \
+    && chown -R appusr:appgrp /var/cache/nginx /var/log/nginx /etc/nginx/conf.d \
+    && touch /var/run/nginx.pid && chown appusr:appgrp /var/run/nginx.pid
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/ /usr/share/nginx/html/
 
+USER appusr
 EXPOSE 80
 
 # --- Dev stage: Vite dev server with hot reload ---
@@ -31,5 +36,6 @@ RUN npm install --no-audit --no-fund --prefer-offline || npm install --no-audit 
 
 COPY . .
 
+USER node
 EXPOSE 5173
 CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port 5173 --strictPort"]
