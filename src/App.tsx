@@ -1,16 +1,25 @@
+import { InputPane } from './components/InputPane'
+import { OutputPane } from './components/OutputPane'
+import { RecipeBuilder } from './components/RecipeBuilder'
+
 function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <div className="max-w-lg text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+    <div className="flex min-h-screen flex-col bg-slate-100">
+      <header className="border-b border-slate-200 bg-white px-4 py-3">
+        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
           CipherBench
         </h1>
-        <p className="mt-3 text-slate-600">
-          Phase 0 scaffold is ready — Operation registry, recipe engine, and
-          Base64 decode are in place. UI arrives in Phase 1.
+        <p className="text-sm text-slate-600">
+          Client-side encode/decode workbench for CTF and SOC workflows.
         </p>
-      </div>
-    </main>
+      </header>
+
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
+        <InputPane />
+        <RecipeBuilder />
+        <OutputPane />
+      </main>
+    </div>
   )
 }
 

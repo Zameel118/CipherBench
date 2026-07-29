@@ -1,6 +1,22 @@
 import { Base64 } from 'js-base64'
 import type { Operation } from '../../core/types'
 
+function normalizeAlphabetParam(params: Record<string, string | number | boolean>): 'standard' | 'url-safe' {
+  const alphabet = String(params.alphabet ?? 'standard')
+  return alphabet === 'url-safe' ? 'url-safe' : 'standard'
+}
+
+function base64DetectConfidence(input: string): number {
+  const trimmed = input.trim().replace(/\s+/g, '')
+  if (trimmed.length === 0) return 0
+  const standardOk = /^[A-Za-z0-9+/]+=*$/.test(trimmed)
+  const urlSafeOk = /^[A-Za-z0-9_-]+=*$/.test(trimmed)
+  if (!standardOk && !urlSafeOk) return 0
+  if (trimmed.length % 4 !== 0) return 0.3
+  if (trimmed.length < 4) return 0.2
+  return 0.85
+}
+
 /**
  * Base64 decode (From Base64).
  * Uses js-base64 rather than hand-rolled bit packing — alphabet edge cases
@@ -20,33 +36,20 @@ export const base64Decode: Operation = {
     },
   ],
   detectable: true,
-  detectConfidence: (input: string): number => {
-    const trimmed = input.trim().replace(/\s+/g, '')
-    if (trimmed.length === 0) return 0
-    // Standard or URL-safe charset; length should be a multiple of 4 (with padding).
-    const standardOk = /^[A-Za-z0-9+/]+=*$/.test(trimmed)
-    const urlSafeOk = /^[A-Za-z0-9_-]+=*$/.test(trimmed)
-    if (!standardOk && !urlSafeOk) return 0
-    if (trimmed.length % 4 !== 0) return 0.3
-    if (trimmed.length < 4) return 0.2
-    return 0.85
-  },
+  detectConfidence: base64DetectConfidence,
   run: (input, params) => {
     const raw = input.data
     if (raw.length === 0) {
       return { data: '', type: 'string' }
     }
 
-    const alphabet = String(params.alphabet ?? 'standard')
-    // Normalize whitespace that often appears in wrapped Base64 blobs.
+    const alphabet = normalizeAlphabetParam(params)
     let cleaned = raw.trim().replace(/\s+/g, '')
 
     if (alphabet === 'url-safe') {
-      // Convert URL-safe alphabet to standard before decoding.
       cleaned = cleaned.replace(/-/g, '+').replace(/_/g, '/')
     }
 
-    // Validate charset after URL-safe normalization.
     if (!/^[A-Za-z0-9+/]+=*$/.test(cleaned)) {
       return {
         data: raw,
@@ -55,7 +58,6 @@ export const base64Decode: Operation = {
       }
     }
 
-    // Add missing padding so js-base64 / atob don't reject near-valid input.
     const pad = cleaned.length % 4
     if (pad === 1) {
       return {
@@ -76,6 +78,40 @@ export const base64Decode: Operation = {
         data: raw,
         type: 'string',
         error: 'Invalid Base64: failed to decode',
+      }
+    }
+  },
+}
+
+export const base64Encode: Operation = {
+  id: 'base64-encode',
+  name: 'To Base64',
+  category: 'Encoding',
+  description: 'Encode plain text (UTF-8) to Base64.',
+  params: [
+    {
+      name: 'alphabet',
+      type: 'select',
+      default: 'standard',
+      options: ['standard', 'url-safe'],
+    },
+  ],
+  run: (input, params) => {
+    if (input.data.length === 0) {
+      return { data: '', type: 'string' }
+    }
+    const alphabet = normalizeAlphabetParam(params)
+    try {
+      const encoded =
+        alphabet === 'url-safe'
+          ? Base64.encodeURI(input.data)
+          : Base64.encode(input.data)
+      return { data: encoded, type: 'string' }
+    } catch {
+      return {
+        data: input.data,
+        type: 'string',
+        error: 'Failed to Base64-encode input',
       }
     }
   },
