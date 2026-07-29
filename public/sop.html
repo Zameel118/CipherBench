@@ -1,312 +1,1052 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark-modern">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="CipherBench SOP - full CTF/SOC workbench guide, features, and specialties." />
+    <meta
+      name="description"
+      content="CipherBench SOP - CTF/SOC workbench guide matching the live app design. Features, operations, security, and workflow."
+    />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <title>CipherBench · SOP</title>
     <style>
       :root {
         --bg: #0b0f15;
-        --panel: #11161e;
+        --bg-elevated: #11161e;
+        --bg-soft: #151b24;
         --border: #1e2633;
+        --border-strong: #2a3444;
         --text: #e8edf5;
-        --muted: #8b95a8;
-        --dim: #5c667a;
+        --text-muted: #8b95a8;
+        --text-dim: #5c667a;
         --accent: #4ade80;
         --accent-soft: #5eead4;
+        --accent-dim: rgba(74, 222, 128, 0.14);
+        --accent-border: rgba(74, 222, 128, 0.35);
+        --danger: #fb7185;
+        --radius: 8px;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --mono: 'JetBrains Mono', ui-monospace, monospace;
+        --sans: 'Space Grotesk', ui-sans-serif, sans-serif;
       }
+
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+
       body {
         margin: 0;
-        font-family: "Segoe UI", system-ui, sans-serif;
+        min-height: 100vh;
+        font-family: var(--sans);
         color: var(--text);
-        background:
-          radial-gradient(ellipse 70% 40% at 10% -10%, rgba(74, 222, 128, 0.08), transparent 55%),
-          var(--bg);
-        line-height: 1.65;
+        line-height: 1.6;
+        background-color: var(--bg);
+        background-image:
+          radial-gradient(ellipse 70% 45% at 12% -10%, rgba(74, 222, 128, 0.07), transparent 55%),
+          radial-gradient(ellipse 50% 40% at 100% 0%, rgba(94, 234, 212, 0.05), transparent 50%),
+          linear-gradient(rgba(74, 222, 128, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(74, 222, 128, 0.03) 1px, transparent 1px);
+        background-size: auto, auto, 28px 28px, 28px 28px;
+        animation: boot 0.55s var(--ease-out) both;
       }
-      .wrap {
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 32px 20px 80px;
+
+      @keyframes boot {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-      .top {
+
+      @keyframes fade-up {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes slide-down {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .cb-header {
+        position: sticky;
+        top: 0;
+        z-index: 80;
         display: flex;
-        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 28px;
-        padding-bottom: 16px;
+        gap: 16px;
+        padding: 12px 20px;
         border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        backdrop-filter: blur(10px);
+        animation: slide-down 0.45s var(--ease-out) both;
       }
-      .brand {
+
+      .cb-brand {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
-      .brand img { width: 36px; height: 36px; }
-      .brand h1 {
+
+      .cb-brand img {
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.25));
+        transition: transform 0.35s var(--ease-out), filter 0.35s ease;
+      }
+
+      .cb-brand:hover img {
+        transform: scale(1.04) rotate(-2deg);
+        filter: drop-shadow(0 0 14px rgba(74, 222, 128, 0.4));
+      }
+
+      .cb-brand-name {
         margin: 0;
-        font-family: ui-monospace, "Cascadia Code", monospace;
-        font-size: 18px;
+        font-family: var(--mono);
+        font-size: 16px;
+        font-weight: 700;
         letter-spacing: 0.02em;
       }
-      .brand p {
+
+      .cb-brand-sub {
         margin: 2px 0 0;
-        font-family: ui-monospace, monospace;
-        font-size: 11px;
+        font-family: var(--mono);
+        font-size: 10px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--muted);
+        color: var(--text-muted);
       }
-      a.back {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--accent);
-        text-decoration: none;
-        font-family: ui-monospace, monospace;
-        font-size: 12px;
-        transition: background 0.2s, border-color 0.2s;
-      }
-      a.back:hover {
-        background: rgba(74, 222, 128, 0.12);
-        border-color: rgba(74, 222, 128, 0.4);
-      }
-      nav.toc {
+
+      .cb-header-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin: 0 0 28px;
+        align-items: center;
       }
-      nav.toc a {
-        font-family: ui-monospace, monospace;
+
+      .cb-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        border-radius: var(--radius);
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          transform 0.2s var(--ease-out),
+          box-shadow 0.25s ease;
+      }
+
+      .cb-btn-primary {
+        color: #06100a;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+          0 0 18px rgba(74, 222, 128, 0.22);
+      }
+
+      .cb-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 28px rgba(74, 222, 128, 0.4);
+      }
+
+      .cb-btn-share {
+        color: var(--text);
+        background: var(--bg-elevated);
+        border-color: var(--border-strong);
+      }
+
+      .cb-btn-share:hover {
+        color: var(--accent);
+        border-color: var(--accent-border);
+        background: var(--accent-dim);
+      }
+
+      .cb-btn-ghost {
+        color: var(--text-muted);
+        background: transparent;
+      }
+
+      .cb-btn-ghost:hover {
+        color: var(--text);
+        background: var(--bg-soft);
+        border-color: var(--border);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        gap: 0;
+        max-width: 1180px;
+        margin: 0 auto;
+        min-height: calc(100vh - 58px);
+        animation: fade-up 0.5s 0.06s var(--ease-out) both;
+      }
+
+      @media (max-width: 900px) {
+        .layout { grid-template-columns: 1fr; }
+        .toc-rail { display: none; }
+      }
+
+      .toc-rail {
+        position: sticky;
+        top: 58px;
+        align-self: start;
+        max-height: calc(100vh - 58px);
+        overflow-y: auto;
+        padding: 20px 14px 32px;
+        border-right: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg) 70%, transparent);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        padding: 0 8px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .toc-rail a {
+        display: block;
+        padding: 8px 10px;
+        margin-bottom: 2px;
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s ease, background 0.2s ease, padding-left 0.2s var(--ease-out);
+      }
+
+      .toc-rail a:hover,
+      .toc-rail a.is-active {
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      .toc-rail a:hover { padding-left: 14px; }
+
+      .content {
+        padding: 28px 28px 72px;
+        min-width: 0;
+      }
+
+      @media (max-width: 640px) {
+        .content { padding: 20px 16px 64px; }
+      }
+
+      .hero {
+        margin-bottom: 28px;
+        padding: 22px 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: linear-gradient(180deg, var(--accent-dim), transparent 70%);
+        animation: fade-up 0.45s 0.1s var(--ease-out) both;
+      }
+
+      .hero h2 {
+        margin: 0 0 8px;
+        font-family: var(--mono);
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        border: none;
+        padding: 0;
+        text-transform: none;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 62ch;
+        color: var(--text-muted);
+      }
+
+      .live-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-right: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent);
+        animation: pulse 2s ease-in-out infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg-elevated);
+        font-family: var(--mono);
         font-size: 11px;
-        color: var(--muted);
+        color: var(--text-muted);
+        transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.18s var(--ease-out);
+      }
+
+      .chip:hover {
+        color: var(--accent);
+        border-color: var(--accent-border);
+        background: var(--accent-dim);
+        transform: translateY(-1px);
+      }
+
+      .chip em {
+        font-style: normal;
+        color: var(--accent);
+        font-size: 10px;
+      }
+
+      section.block {
+        margin-bottom: 8px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg-elevated);
+        overflow: hidden;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        animation: fade-up 0.4s var(--ease-out) both;
+      }
+
+      section.block:hover {
+        border-color: var(--accent-border);
+        box-shadow: 0 0 24px -12px rgba(74, 222, 128, 0.25);
+      }
+
+      section.block + section.block { margin-top: 12px; }
+
+      .block-toggle {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+      }
+
+      .block-toggle:hover { background: var(--bg-soft); }
+
+      .block-title {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .block-sub {
+        margin: 4px 0 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .chevron {
+        flex-shrink: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+        transition: transform 0.28s var(--ease-out), color 0.2s;
+      }
+
+      .block[data-open='true'] .chevron {
+        transform: rotate(90deg);
+        color: var(--accent);
+      }
+
+      .block-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition:
+          grid-template-rows 0.32s var(--ease-out),
+          opacity 0.25s ease;
+      }
+
+      .block[data-open='true'] .block-body {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+
+      .block-body-inner {
+        min-height: 0;
+        overflow: hidden;
+        border-top: 1px solid var(--border);
+        padding: 0 16px;
+      }
+
+      .block[data-open='true'] .block-body-inner {
+        padding: 16px;
+      }
+
+      h3 {
+        margin: 18px 0 8px;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--accent-soft);
+      }
+
+      h3:first-child { margin-top: 0; }
+
+      p, li { color: var(--text-muted); font-size: 14.5px; }
+      p { margin: 0 0 12px; }
+      ul, ol { margin: 0 0 12px; padding-left: 1.2rem; }
+      li { margin: 6px 0; }
+      strong { color: var(--text); font-weight: 600; }
+
+      code, .kbd {
+        font-family: var(--mono);
+        font-size: 0.9em;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        color: var(--accent-soft);
+      }
+
+      .kbd {
+        font-size: 11px;
+        color: var(--text);
+        padding: 2px 6px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin: 12px 0;
+      }
+
+      .card {
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        transition: border-color 0.2s, transform 0.2s var(--ease-out), background 0.2s;
+      }
+
+      .card:hover {
+        border-color: var(--accent-border);
+        background: var(--accent-dim);
+        transform: translateY(-2px);
+      }
+
+      .card h4 {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+      }
+
+      .card p {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      .op-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 12px;
+        margin: 8px 0 14px;
+      }
+
+      .op-table th,
+      .op-table td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      .op-table th {
+        color: var(--text-dim);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+
+      .op-table td:first-child { color: var(--accent); white-space: nowrap; }
+      .op-table td { color: var(--text-muted); }
+
+      .steps {
+        counter-reset: sop;
+        list-style: none;
+        padding: 0;
+      }
+
+      .steps li {
+        position: relative;
+        margin: 0 0 10px;
+        padding: 12px 14px 12px 48px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        transition: border-color 0.2s;
+      }
+
+      .steps li:hover { border-color: var(--accent-border); }
+
+      .steps li::before {
+        counter-increment: sop;
+        content: counter(sop, decimal-leading-zero);
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      .footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 28px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .mobile-toc {
+        display: none;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
+
+      @media (max-width: 900px) {
+        .mobile-toc { display: flex; }
+      }
+
+      .mobile-toc a {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
         text-decoration: none;
         border: 1px solid var(--border);
         border-radius: 999px;
         padding: 4px 10px;
+        background: var(--bg-elevated);
       }
-      nav.toc a:hover { color: var(--accent); border-color: rgba(74, 222, 128, 0.35); }
-      h2 {
-        margin: 36px 0 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--border);
-        font-family: ui-monospace, monospace;
-        font-size: 14px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
-      }
-      h3 {
-        margin: 22px 0 8px;
-        font-size: 17px;
-        color: var(--accent-soft);
-      }
-      p, li { color: var(--muted); }
-      strong { color: var(--text); }
-      code {
-        font-family: ui-monospace, monospace;
-        font-size: 0.92em;
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 1px 5px;
-        color: var(--accent-soft);
-      }
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px 18px;
-        margin: 14px 0;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
-      }
-      .grid .card h3 { margin-top: 0; font-size: 14px; }
-      ul { padding-left: 1.2rem; }
-      li { margin: 6px 0; }
-      .kbd {
-        font-family: ui-monospace, monospace;
-        font-size: 11px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 2px 6px;
-        color: var(--text);
-        background: #0a0e14;
-      }
-      footer {
-        margin-top: 48px;
-        padding-top: 16px;
-        border-top: 1px solid var(--border);
-        font-family: ui-monospace, monospace;
-        font-size: 11px;
-        color: var(--dim);
+
+      .mobile-toc a:hover { color: var(--accent); border-color: var(--accent-border); }
+
+      @media (prefers-reduced-motion: reduce) {
+        body, .cb-header, .layout, .hero, section.block, .live-dot {
+          animation: none !important;
+        }
+        .block-body, .cb-btn, .card, .chip, .chevron {
+          transition: none !important;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div class="top">
-        <div class="brand">
-          <img src="./favicon.svg" alt="" />
-          <div>
-            <h1>CipherBench SOP</h1>
-            <p>Standard operating procedures · CTF / SOC</p>
-          </div>
+    <header class="cb-header">
+      <div class="cb-brand">
+        <img src="./favicon.svg" width="34" height="34" alt="" />
+        <div>
+          <p class="cb-brand-name">CipherBench</p>
+          <p class="cb-brand-sub">SOP · CTF / SOC workbench</p>
         </div>
-        <a class="back" id="back-link" href="./">← Back to workbench</a>
       </div>
+      <div class="cb-header-actions">
+        <button type="button" class="cb-btn cb-btn-ghost" id="expand-all">Expand all</button>
+        <button type="button" class="cb-btn cb-btn-ghost" id="collapse-all">Collapse</button>
+        <a class="cb-btn cb-btn-share" id="back-link" href="./">← Workbench</a>
+        <a class="cb-btn cb-btn-primary" id="run-link" href="./">Open app</a>
+      </div>
+    </header>
 
-      <nav class="toc" aria-label="Sections">
+    <div class="layout">
+      <aside class="toc-rail" aria-label="On this page">
+        <p class="toc-label">// sections</p>
         <a href="#overview">Overview</a>
-        <a href="#specialties">Specialties</a>
-        <a href="#features">Features</a>
+        <a href="#layout">UI layout</a>
         <a href="#workflow">Workflow</a>
-        <a href="#tools">Tool catalog</a>
-        <a href="#security">Security</a>
+        <a href="#features">Workbench features</a>
+        <a href="#encoding">Encoding ops</a>
+        <a href="#encryption">Encryption ops</a>
+        <a href="#hashing">Hashing ops</a>
+        <a href="#ctf">CTF tools</a>
+        <a href="#soc">SOC tools</a>
+        <a href="#security">Security model</a>
+        <a href="#share">Share &amp; export</a>
+        <a href="#themes">Themes</a>
         <a href="#shortcuts">Shortcuts</a>
-        <a href="#deploy">Deploy</a>
-      </nav>
+        <a href="#deploy">Run &amp; deploy</a>
+        <a href="#vs">vs CyberChef</a>
+      </aside>
 
-      <section id="overview">
-        <h2>1 · What CipherBench is</h2>
-        <p>
-          <strong>CipherBench</strong> is a client-side encode/decode workbench built for
-          <strong>CTF players</strong> and <strong>SOC / DFIR analysts</strong>. You paste a
-          payload, arm an ordered <em>recipe</em> of transforms, and read live output with flag
-          highlighting - without uploading secrets to a server.
-        </p>
-        <div class="grid">
-          <div class="card">
-            <h3>CTF mode</h3>
-            <p>Chain Base64, hex, XOR brute-force, ROT/Caesar, gzip, and flag hunting until <code>FLAG{'{...}'}</code> appears.</p>
-          </div>
-          <div class="card">
-            <h3>SOC mode</h3>
-            <p>Triage JWTs, PowerShell <code>-EncodedCommand</code>, MIME headers, IOCs, and defang/refang for safe sharing.</p>
-          </div>
-          <div class="card">
-            <h3>Privacy first</h3>
-            <p>All crypto and parsing runs in your browser. Shared recipes never include pasted input.</p>
+      <main class="content">
+        <div class="mobile-toc" aria-label="Jump">
+          <a href="#overview">Overview</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#features">Features</a>
+          <a href="#encoding">Ops</a>
+          <a href="#security">Security</a>
+          <a href="#vs">vs CyberChef</a>
+        </div>
+
+        <div class="hero" id="overview">
+          <h2><span class="live-dot" aria-hidden></span>Standard operating procedures</h2>
+          <p>
+            CipherBench is a <strong>client-side</strong> encode/decode workbench for CTF players and
+            SOC / DFIR analysts. Paste a payload, arm an ordered recipe of transforms, and read live
+            output with flag highlighting - without uploading secrets to a server.
+          </p>
+          <div class="chips">
+            <span class="chip">privacy <em>local-only</em></span>
+            <span class="chip">recipe <em>chainable</em></span>
+            <span class="chip">detect <em>magic</em></span>
+            <span class="chip">flags <em>regex+</em></span>
+            <span class="chip">soc <em>jwt · ps · ioc</em></span>
           </div>
         </div>
-      </section>
 
-      <section id="specialties">
-        <h2>2 · What makes it special</h2>
-        <ul>
-          <li><strong>Recipe engine</strong> - composable stages with params, reorder, and live re-run.</li>
-          <li><strong>Magic detect</strong> - heuristic suggestions appear beside Input when encodings are likely.</li>
-          <li><strong>Flag radar</strong> - configurable regex with ReDoS guards, scan limits, and a timeout worker for highlighting.</li>
-          <li><strong>Brute-force guards</strong> - size caps on XOR / chain brute force so a multi-MB paste cannot freeze the tab.</li>
-          <li><strong>Share without leak</strong> - JSON / URL / download export of ops only; optional local history.</li>
-          <li><strong>CTF UI</strong> - monospace chrome, mint terminal themes (including Cursor-style Dark/Light Modern + High Contrast), smooth menus.</li>
-          <li><strong>Docker + GitHub Pages</strong> - same static build for local nginx or project Pages.</li>
-        </ul>
-      </section>
+        <!-- LAYOUT -->
+        <section class="block" id="layout" data-open="true">
+          <button type="button" class="block-toggle" aria-expanded="true">
+            <span>
+              <p class="block-title">// ui layout</p>
+              <p class="block-sub">Same three-column workbench you use in the app</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <div class="grid">
+              <div class="card">
+                <h4>// operations</h4>
+                <p>Searchable arsenal. Categories accordion-open; click an op to append it to the recipe.</p>
+              </div>
+              <div class="card">
+                <h4>// recipe</h4>
+                <p>Numbered stages. Expand for params, drag to reorder, remove with ×. Drop zone hints next step.</p>
+              </div>
+              <div class="card">
+                <h4>// input · output</h4>
+                <p>Paste raw signal; live decode below. Flag regex, copy, download, wrap toggle on output.</p>
+              </div>
+            </div>
+            <p>
+              Header: <strong>Auto</strong> (live re-run), <strong>Share</strong> (export/import),
+              <strong>Theme</strong>, <strong>SOP</strong> (this page), <strong>?</strong> tour,
+              <strong>Run</strong> (<span class="kbd">Ctrl</span>+<span class="kbd">Enter</span>).
+              Footer shows ops armed, chars, bytes, and last run ms.
+            </p>
+          </div></div>
+        </section>
 
-      <section id="features">
-        <h2>3 · Feature map</h2>
-        <h3>Workbench</h3>
-        <ul>
-          <li>Operations library with category accordion + search (<span class="kbd">Ctrl</span>+<span class="kbd">K</span>)</li>
-          <li>Recipe column with numbered steps, param expanders, drag reorder</li>
-          <li>Input / Output split with entropy badge, Sample packs, Swap↑, Clear</li>
-          <li>Status tray: flags found · IOCs · jump to suggestions</li>
-          <li>Auto-run toggle · manual <strong>Run</strong> (<span class="kbd">Ctrl</span>+<span class="kbd">Enter</span>)</li>
-        </ul>
-        <h3>Share &amp; export</h3>
-        <ul>
-          <li>Copy recipe JSON · Copy shareable link · Download recipe <code>.json</code></li>
-          <li><strong>Download output</strong> as <code>.txt</code> · Copy output</li>
-          <li>Import JSON · Save / restore local recipe history</li>
-        </ul>
-        <h3>Themes</h3>
-        <ul>
-          <li>Dark Modern · Light Modern · Dark High Contrast · Light High Contrast · Midnight Terminal · Match System</li>
-          <li>Preference persisted in <code>localStorage</code></li>
-        </ul>
-      </section>
+        <!-- WORKFLOW -->
+        <section class="block" id="workflow" data-open="true">
+          <button type="button" class="block-toggle" aria-expanded="true">
+            <span>
+              <p class="block-title">// recommended workflow</p>
+              <p class="block-sub">CTF decode or SOC triage in six moves</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <ol class="steps">
+              <li><strong>Paste</strong> ciphertext, logs, JWT, or PowerShell blob (or use Sample ▾).</li>
+              <li>Read <strong>// detect</strong> chips under Input - click to arm a likely decode.</li>
+              <li>Add more ops from Operations; expand recipe steps to set alphabet, XOR key, JWT secret, etc.</li>
+              <li>Leave <strong>Auto</strong> on, or hit <strong>Run</strong> after edits.</li>
+              <li>Check Output + flag highlights; use Find Flags / IOC Extract when hunting.</li>
+              <li><strong>Share</strong> the recipe or <strong>Download output</strong> - never put secrets in a URL.</li>
+            </ol>
+          </div></div>
+        </section>
 
-      <section id="workflow">
-        <h2>4 · Recommended SOP</h2>
-        <ol>
-          <li><strong>Paste</strong> ciphertext, logs, JWT, or PS blob into Input (or load a Sample).</li>
-          <li>Review <strong>// detect</strong> chips; click to arm a likely decode.</li>
-          <li>Add more ops from Operations; expand a recipe step to tune params (alphabet, XOR key, JWT secret).</li>
-          <li>Press <strong>Run</strong> (or leave Auto on) and watch Output + flag highlights.</li>
-          <li>Use IOC / Find Flags ops when hunting indicators.</li>
-          <li><strong>Share</strong> the recipe or <strong>Download output</strong> for your notes - never share raw sensitive input via URL.</li>
-        </ol>
-      </section>
+        <!-- FEATURES -->
+        <section class="block" id="features" data-open="true">
+          <button type="button" class="block-toggle" aria-expanded="true">
+            <span>
+              <p class="block-title">// workbench features</p>
+              <p class="block-sub">Functions beyond “one-shot decode”</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <div class="grid">
+              <div class="card">
+                <h4>Magic detect</h4>
+                <p>Heuristic suggestions (score %) appear beside Input when Base64, JWT, hex, etc. look likely. Auto-shown; hide until input changes.</p>
+              </div>
+              <div class="card">
+                <h4>Entropy badge</h4>
+                <p><code>H≈</code> Shannon entropy on Input helps spot high-entropy blobs (XOR / compressed) vs plain encoding.</p>
+              </div>
+              <div class="card">
+                <h4>Swap↑</h4>
+                <p>Promote current Output into Input to continue chaining without copy-paste friction.</p>
+              </div>
+              <div class="card">
+                <h4>Sample packs</h4>
+                <p>One-click Base64 flag, hex blob, or JWT stub for demos and regression checks.</p>
+              </div>
+              <div class="card">
+                <h4>Flag radar</h4>
+                <p>Configurable regex with nested-quantifier / alternation rejection, scan length caps, match limits, and a worker timeout so bad patterns cannot freeze the UI.</p>
+              </div>
+              <div class="card">
+                <h4>Brute-force guards</h4>
+                <p>XOR single-byte brute and decode-chain brute refuse inputs over ~500 KB with a clear error instead of locking the tab.</p>
+              </div>
+              <div class="card">
+                <h4>Status tray</h4>
+                <p>Live counts for flags found and IOCs; Suggestions jumps to / pulses the detect strip.</p>
+              </div>
+              <div class="card">
+                <h4>Recipe history</h4>
+                <p>Save recent recipes on-device; reload from Share without re-building the chain.</p>
+              </div>
+            </div>
+          </div></div>
+        </section>
 
-      <section id="tools">
-        <h2>5 · Tool catalog (high level)</h2>
-        <div class="card">
-          <h3>Encoding</h3>
-          <p>Base64 (std / URL-safe), Hex, URL, binary↔text, case / reverse / whitespace helpers.</p>
-          <h3>Encryption / transforms</h3>
-          <p>XOR (single-byte / repeating / optional 256-key brute force), ROT13 / Caesar with shift brute force.</p>
-          <h3>Hashing</h3>
-          <p>MD5, SHA-1, SHA-256 via vetted <code>crypto-js</code> (analysis helpers, not for new password storage).</p>
-          <h3>CTF tools</h3>
-          <p>Find Flags · Brute-Force Decode Chains (Base64 / hex / URL / gzip / XOR paths ranked by flag confidence).</p>
-          <h3>SOC tools</h3>
-          <p>JWT decode + optional HS* verify · PowerShell -EncodedCommand · MIME header decode · IOC extract · Defang / Refang.</p>
+        <!-- ENCODING -->
+        <section class="block" id="encoding" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// encoding operations</p>
+              <p class="block-sub">Base64 · Hex · URL · text transforms</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <table class="op-table">
+              <thead><tr><th>Op</th><th>Function</th></tr></thead>
+              <tbody>
+                <tr><td>From / To Base64</td><td>Standard or URL-safe alphabet. Decode is the usual first hop on CTF blobs and JWT segments.</td></tr>
+                <tr><td>From / To Hex</td><td>Byte ↔ hex with optional delimiters. Use after Base64 when the next layer is hex-packed.</td></tr>
+                <tr><td>URL Encode / Decode</td><td>Percent-encoding for query strings and phishing URLs.</td></tr>
+                <tr><td>Text ↔ Binary</td><td>ASCII/UTF-16 style binary views for homework-style challenges.</td></tr>
+                <tr><td>Reverse · Case · Trim · Normalize</td><td>Quick cleanup: reverse strings, upper/lower, trim edges, collapse whitespace before hashing or matching.</td></tr>
+              </tbody>
+            </table>
+          </div></div>
+        </section>
+
+        <!-- ENCRYPTION -->
+        <section class="block" id="encryption" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// encryption / cipher ops</p>
+              <p class="block-sub">XOR · ROT13 / Caesar</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <h3>XOR</h3>
+            <p>
+              Single-byte or repeating-key XOR. Optional <strong>single-byte brute force</strong> tries all 256 keys,
+              ranks by printable ratio, and prints scored candidates - classic for one-byte CTF XORs.
+              Large inputs are blocked in brute mode to protect the main thread.
+            </p>
+            <h3>ROT13 / Caesar</h3>
+            <p>
+              Shift A–Z / a–z. Use shift 13 for ROT13, or enable brute-force of all non-zero shifts to recover
+              Caesar ciphertext without guessing.
+            </p>
+          </div></div>
+        </section>
+
+        <!-- HASHING -->
+        <section class="block" id="hashing" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// hashing</p>
+              <p class="block-sub">MD5 · SHA-1 · SHA-256</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <p>
+              Fingerprint strings for IOC matching, challenge verification, or comparing dumps.
+              Implemented via <code>crypto-js</code> (vetted library - not for storing new passwords).
+              Pair with IOC Extract to pull hashes from free text.
+            </p>
+          </div></div>
+        </section>
+
+        <!-- CTF -->
+        <section class="block" id="ctf" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// ctf tools</p>
+              <p class="block-sub">Find Flags · Brute-Force Decode Chains</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <h3>Find Flags</h3>
+            <p>
+              Lists substrings matching the configured flag pattern (default CTF-style
+              <code>[A-Za-z0-9_]+\{[^}]+\}</code>). Same engine powers Output highlighting.
+            </p>
+            <h3>Brute-Force Decode Chains</h3>
+            <p>
+              Tries preset paths (Base64, URL-safe Base64, hex, URL, Base64→hex, hex→Base64, Base64→gzip,
+              Base64→XOR brute) and ranks hits that contain flag-shaped strings by confidence + printability.
+              Use when you know “something is encoded” but not which stack.
+            </p>
+          </div></div>
+        </section>
+
+        <!-- SOC -->
+        <section class="block" id="soc" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// soc tools</p>
+              <p class="block-sub">JWT · PowerShell · MIME · IOC · Defang</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <table class="op-table">
+              <thead><tr><th>Op</th><th>Function</th></tr></thead>
+              <tbody>
+                <tr><td>JWT Decode</td><td>Base64url header/payload pretty-print. Optional HMAC verify (HS256/384/512) with a secret you supply - timing-safe compare.</td></tr>
+                <tr><td>PowerShell -EncodedCommand</td><td>UTF-16LE + Base64 encode/decode for LOLBin triage. Decodes opaque command-line blobs into readable script.</td></tr>
+                <tr><td>MIME Encoded-Word</td><td>Decode RFC 2047 <code>=?charset?B/Q?...?=</code> header fragments from phishing mail.</td></tr>
+                <tr><td>IOC Extractor</td><td>Pull IPv4, domains, URLs, MD5/SHA1/SHA256, emails from unstructured text into labeled sections.</td></tr>
+                <tr><td>Defang / Refang</td><td>Safe sharing of URLs/IPs (<code>hxxp</code>, <code>[.]</code>) and reverse for analysis.</td></tr>
+              </tbody>
+            </table>
+          </div></div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="block" id="security" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// security model</p>
+              <p class="block-sub">Why this is safe enough for incident paste</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <ul>
+              <li><strong>No default backend</strong> - transforms run in the browser.</li>
+              <li><strong>CSP</strong> - meta policy locks script/style/connect/worker to self (+ fonts).</li>
+              <li><strong>ReDoS defenses</strong> - pattern shape checks, scan/match budgets, worker timeout for highlighting.</li>
+              <li><strong>DoS size caps</strong> - brute-force paths refuse oversized inputs.</li>
+              <li><strong>Stack-safe strings</strong> - chunked <code>fromCharCode</code> for large XOR / PS payloads.</li>
+              <li><strong>Share hygiene</strong> - JSON/URL exports exclude input text.</li>
+            </ul>
+          </div></div>
+        </section>
+
+        <!-- SHARE -->
+        <section class="block" id="share" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// share &amp; export</p>
+              <p class="block-sub">Transmit recipes and results without leaking paste</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <div class="grid">
+              <div class="card"><h4>Copy JSON</h4><p>Recipe ops + params to clipboard.</p></div>
+              <div class="card"><h4>Copy link</h4><p>URL that rehydrates the recipe on open.</p></div>
+              <div class="card"><h4>Download recipe</h4><p><code>.json</code> file + optional history save.</p></div>
+              <div class="card"><h4>Download output</h4><p>Decoded result as <code>.txt</code> (also ↓ Out on Output).</p></div>
+              <div class="card"><h4>Copy output</h4><p>Result to clipboard for tickets / chat.</p></div>
+              <div class="card"><h4>Import / history</h4><p>Paste JSON or reload a recent local recipe.</p></div>
+            </div>
+          </div></div>
+        </section>
+
+        <!-- THEMES -->
+        <section class="block" id="themes" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// themes</p>
+              <p class="block-sub">Cursor-style picker · CipherBench mint palette</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <p>
+              Dark Modern · Light Modern · Dark High Contrast · Light High Contrast · Midnight Terminal ·
+              Match System. Choice is stored in <code>localStorage</code> and applied via <code>data-theme</code>.
+            </p>
+          </div></div>
+        </section>
+
+        <!-- SHORTCUTS -->
+        <section class="block" id="shortcuts" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// shortcuts</p>
+              <p class="block-sub">Keyboard ops floor</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <ul>
+              <li><span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> - Run recipe</li>
+              <li><span class="kbd">Ctrl</span>+<span class="kbd">K</span> - Focus operations search</li>
+              <li><span class="kbd">?</span> - Tour (when not typing in a field)</li>
+              <li><span class="kbd">Esc</span> - Close Share / Theme menus</li>
+            </ul>
+          </div></div>
+        </section>
+
+        <!-- DEPLOY -->
+        <section class="block" id="deploy" data-open="false">
+          <button type="button" class="block-toggle" aria-expanded="false">
+            <span>
+              <p class="block-title">// run &amp; deploy</p>
+              <p class="block-sub">Dev · Docker · GitHub Pages</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <ul>
+              <li><strong>Dev:</strong> <code>npm run dev</code></li>
+              <li><strong>Docker:</strong> <code>npm run docker:rebuild</code> → <code>http://127.0.0.1:5173/</code></li>
+              <li><strong>Pages:</strong> build with <code>VITE_BASE_PATH=/CipherBench/</code>; publish <code>dist</code> (incl. this <code>sop.html</code>) to <code>gh-pages</code></li>
+              <li><strong>Tests:</strong> <code>npm test</code></li>
+            </ul>
+          </div></div>
+        </section>
+
+        <!-- VS -->
+        <section class="block" id="vs" data-open="true">
+          <button type="button" class="block-toggle" aria-expanded="true">
+            <span>
+              <p class="block-title">// vs cyberchef &amp; roadmap ideas</p>
+              <p class="block-sub">Where CipherBench wins today · what to steal next</p>
+            </span>
+            <span class="chevron" aria-hidden>▸</span>
+          </button>
+          <div class="block-body"><div class="block-body-inner">
+            <h3>Already strong vs CyberChef</h3>
+            <ul>
+              <li>SOC-first ops (JWT verify, PS EncodedCommand, MIME, defang, IOC) in one deck</li>
+              <li>Flag-aware UI (highlight + detector + chain ranking)</li>
+              <li>Hardened client UX (ReDoS / size guards, CSP, no-input share links)</li>
+              <li>Modern CTF chrome with themes and guided SOP/tour</li>
+            </ul>
+            <h3>High-value features to add (CyberChef-class)</h3>
+            <div class="grid">
+              <div class="card"><h4>More codecs</h4><p>Gzip/deflate/zlib standalone, Base32/58/85, Morse, HTML entities, Punycode, JWT forge.</p></div>
+              <div class="card"><h4>Binary / files</h4><p>Drop files, hex dump viewer, magic-byte detect, PE/ELF light parse.</p></div>
+              <div class="card"><h4>Bake vs Dish</h4><p>Named recipe library, fork/diff two chains, “bake” snapshot of I/O pairs.</p></div>
+              <div class="card"><h4>Regex / extract</h4><p>General Regex Extract, Find/Replace, JSON path / jq-lite.</p></div>
+              <div class="card"><h4>Crypto depth</h4><p>AES/RC4 with key UI, RSA PEM paste (careful UX), HMAC standalone.</p></div>
+              <div class="card"><h4>Workers everywhere</h4><p>Offload XOR brute, hashing of large blobs, and gzip to Web Workers.</p></div>
+              <div class="card"><h4>Magic deeper</h4><p>CyberChef-like multi-step “Magic” that proposes full recipes, not just one op.</p></div>
+              <div class="card"><h4>Collaborative IR</h4><p>Case notes pane, timeline of transforms, export PDF/Markdown report.</p></div>
+            </div>
+          </div></div>
+        </section>
+
+        <div class="footer">
+          <span><span class="live-dot" aria-hidden></span>client-side · no upload by default</span>
+          <span>CipherBench SOP · bookmark this page</span>
         </div>
-      </section>
-
-      <section id="security">
-        <h2>6 · Security &amp; trust model</h2>
-        <ul>
-          <li>No default backend - processing is local.</li>
-          <li>CSP meta tag limits script/style/connect/worker sources.</li>
-          <li>Flag regex validation + match budgets + worker timeout reduce ReDoS risk.</li>
-          <li>Large-input cutoff for automatic brute-force paths.</li>
-          <li>Chunked <code>String.fromCharCode</code> avoids stack overflows on big buffers.</li>
-          <li>Shared links encode recipe structure only.</li>
-        </ul>
-      </section>
-
-      <section id="shortcuts">
-        <h2>7 · Shortcuts</h2>
-        <ul>
-          <li><span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> - Run recipe</li>
-          <li><span class="kbd">Ctrl</span>+<span class="kbd">K</span> - Focus operations search</li>
-          <li><span class="kbd">?</span> - Replay in-app tour (when not typing in a field)</li>
-          <li><span class="kbd">Esc</span> - Close menus / tour</li>
-        </ul>
-      </section>
-
-      <section id="deploy">
-        <h2>8 · Run &amp; deploy</h2>
-        <ul>
-          <li><strong>Dev:</strong> <code>npm run dev</code></li>
-          <li><strong>Docker (local):</strong> <code>npm run docker:rebuild</code> → <code>http://127.0.0.1:5173/</code></li>
-          <li><strong>GitHub Pages:</strong> build with <code>VITE_BASE_PATH=/CipherBench/</code>; publish <code>dist</code> to <code>gh-pages</code></li>
-          <li><strong>Tests:</strong> <code>npm test</code> (Vitest operation + core suite)</li>
-        </ul>
-      </section>
-
-      <footer>
-        CipherBench · client-side CTF/SOC workbench · this SOP page is static and safe to bookmark.
-      </footer>
+      </main>
     </div>
+
     <script>
-      // Keep "Back" correct under GitHub Pages base paths.
-      document.getElementById('back-link').href = new URL('./', window.location.href).href;
+      const back = document.getElementById('back-link');
+      const run = document.getElementById('run-link');
+      const home = new URL('./', window.location.href).href;
+      back.href = home;
+      run.href = home;
+
+      const blocks = [...document.querySelectorAll('section.block')];
+
+      function setOpen(block, open) {
+        block.dataset.open = open ? 'true' : 'false';
+        const btn = block.querySelector('.block-toggle');
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+
+      blocks.forEach((block) => {
+        const btn = block.querySelector('.block-toggle');
+        btn?.addEventListener('click', () => {
+          setOpen(block, block.dataset.open !== 'true');
+        });
+      });
+
+      document.getElementById('expand-all')?.addEventListener('click', () => {
+        blocks.forEach((b) => setOpen(b, true));
+      });
+      document.getElementById('collapse-all')?.addEventListener('click', () => {
+        blocks.forEach((b) => setOpen(b, false));
+      });
+
+      const tocLinks = [...document.querySelectorAll('.toc-rail a')];
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!visible) return;
+          const id = visible.target.id;
+          tocLinks.forEach((a) => {
+            a.classList.toggle('is-active', a.getAttribute('href') === `#${id}`);
+          });
+        },
+        { rootMargin: '-20% 0px -55% 0px', threshold: [0.1, 0.4, 0.7] },
+      );
+
+      blocks.forEach((b) => observer.observe(b));
+      const hero = document.getElementById('overview');
+      if (hero) observer.observe(hero);
     </script>
   </body>
 </html>
