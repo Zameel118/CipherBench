@@ -17,28 +17,27 @@ export function InputPane() {
 
   const charCount = useMemo(() => input.length, [input])
 
+  const loadSample = () => {
+    setInput('RkxBR3t0ZXN0X2Jhc2U2NF9jaGFpbn0=')
+  }
+
   return (
-    <section
-      className="card glow-green flex min-h-0 flex-col"
-      style={{ borderTop: '2px solid var(--accent)' }}
-    >
-      <div className="card-header">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
-          <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Input</h2>
+    <section className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0" id="workbench-input">
+      <div className="cb-panel-header">
+        <div>
+          <p className="font-code text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
+            Intel ingest
+          </p>
+          <h2 className="text-base font-bold text-white">Raw signal</h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {charCount > 0 && (
-            <span className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
-              {charCount.toLocaleString()}
-            </span>
+            <span className="font-code text-xs text-[#6b7194]">{charCount.toLocaleString()}</span>
           )}
-          <button
-            type="button"
-            onClick={resetInput}
-            className="rounded-md px-3 py-1 text-xs font-semibold transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
-          >
+          <button type="button" onClick={loadSample} className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]">
+            Sample
+          </button>
+          <button type="button" onClick={resetInput} className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]">
             Clear
           </button>
         </div>
@@ -47,10 +46,9 @@ export function InputPane() {
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Paste ciphertext, encoded data, JWTs, PowerShell commands, logs..."
+        placeholder="Drop ciphertext, logs, JWTs, PowerShell -EncodedCommand, MIME headers..."
         spellCheck={false}
-        className="font-code min-h-0 flex-1 resize-none bg-transparent p-4 text-sm leading-relaxed outline-none"
-        style={{ color: '#66ffaa', caretColor: 'var(--accent)' }}
+        className="font-code min-h-[200px] flex-1 resize-none bg-transparent px-5 py-4 text-[15px] leading-relaxed text-[#4ade80] outline-none placeholder:text-[#4b556f]"
       />
     </section>
   )

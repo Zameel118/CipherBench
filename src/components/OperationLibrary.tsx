@@ -3,11 +3,13 @@ import { getAllOperations, OPERATION_CATEGORIES } from '../operations'
 import { useAppStore } from '../store/useAppStore'
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Encoding: '#00ff88',
-  Encryption: '#ff6644',
-  Hashing: '#ffcc00',
-  'CTF Tools': '#ff44aa',
-  'SOC Tools': '#44aaff',
+  Encoding: '#22d3ee',
+  Encryption: '#fb7185',
+  Hashing: '#fbbf24',
+  'CTF Tools': '#e879f9',
+  'SOC Tools': '#60a5fa',
+  'Data Format': '#a78bfa',
+  Extractors: '#4ade80',
 }
 
 export function OperationLibrary() {
@@ -47,78 +49,57 @@ export function OperationLibrary() {
   }, [filtered])
 
   return (
-    <div className="flex min-h-0 flex-col">
-      <label className="sr-only" htmlFor="op-search">Search operations</label>
-      <div className="relative mb-3">
-        <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-        </svg>
-        <input
-          id="op-search"
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search operations..."
-          className="w-full rounded-lg py-2.5 pl-10 pr-3 text-sm font-medium outline-none transition-all"
-          style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-primary)',
-          }}
-        />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-col">
+      <label className="sr-only" htmlFor="op-search">
+        Search operations
+      </label>
+      <input
+        id="op-search"
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search arsenal — base64, jwt, xor..."
+        className="font-code mb-3 w-full rounded-xl border border-[rgba(37,99,235,0.3)] bg-[rgba(0,0,0,0.4)] px-4 py-3 text-sm text-white outline-none placeholder:text-[#6b7194] focus:border-[rgba(168,85,247,0.5)]"
+      />
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {OPERATION_CATEGORIES.map((cat) => {
           const ops = byCategory.get(cat) ?? []
           if (ops.length === 0) return null
           const isCollapsed = collapsed.has(cat)
-          const color = CATEGORY_COLORS[cat] ?? 'var(--accent)'
+          const color = CATEGORY_COLORS[cat] ?? '#a855f7'
           return (
-            <div key={cat} className="mb-2">
+            <div key={cat} className="mb-3">
               <button
                 type="button"
                 onClick={() => toggleCategory(cat)}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors"
-                style={{ background: isCollapsed ? 'transparent' : `${color}08` }}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-[rgba(255,255,255,0.03)]"
               >
-                <span className="inline-block h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
-                <span className="flex-1 text-sm font-bold uppercase tracking-[0.15em]" style={{ color }}>
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+                />
+                <span
+                  className="flex-1 text-xs font-bold uppercase tracking-[0.16em]"
+                  style={{ color }}
+                >
                   {cat}
                 </span>
-                <span className="font-code rounded-md px-1.5 py-0.5 text-xs font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
-                  {ops.length}
-                </span>
-                <svg
-                  className={`h-3 w-3 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
-                  style={{ color: 'var(--text-muted)' }}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"
-                >
-                  <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <span className="font-code text-[10px] text-[#6b7194]">{ops.length}</span>
               </button>
               {!isCollapsed && (
-                <div className="mt-0.5 space-y-0.5 pl-2">
+                <div className="mt-1 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
                   {ops.map((op) => (
                     <button
                       key={op.id}
                       type="button"
                       onClick={() => addOperationToRecipe(op.id)}
-                      className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all"
-                      style={{ color: 'var(--text-secondary)' }}
+                      className="rounded-xl border border-[rgba(37,99,235,0.15)] bg-[rgba(10,14,28,0.6)] px-3 py-2.5 text-left transition-all hover:border-[rgba(168,85,247,0.4)] hover:bg-[rgba(168,85,247,0.08)]"
                       title={op.description}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = `${color}10`
-                        e.currentTarget.style.color = color
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = 'var(--text-secondary)'
-                      }}
                     >
-                      <svg className="h-3 w-3 flex-shrink-0 opacity-40 transition-opacity group-hover:opacity-100" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-                      </svg>
-                      <span className="text-sm font-medium">{op.name}</span>
+                      <span className="text-sm font-semibold text-[#e8eaf6]">{op.name}</span>
+                      <span className="mt-0.5 block line-clamp-1 text-[11px] text-[#6b7194]">
+                        {op.description}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -127,7 +108,7 @@ export function OperationLibrary() {
           )
         })}
         {filtered.length === 0 && (
-          <p className="py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>No operations match.</p>
+          <p className="py-8 text-center text-sm text-[#6b7194]">No operations match.</p>
         )}
       </div>
     </div>

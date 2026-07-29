@@ -24,19 +24,18 @@ export function OutputPane() {
   }, [display])
 
   return (
-    <section
-      className="card flex min-h-0 flex-col"
-      style={{ borderTop: '2px solid #44aaff' }}
-    >
-      <div className="card-header flex-col !items-start gap-2">
-        <div className="flex w-full items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#44aaff', boxShadow: '0 0 8px rgba(68,170,255,0.5)' }} />
-            <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#44aaff' }}>Output</h2>
+    <section className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0" id="workbench-output">
+      <div className="cb-panel-header flex-col !items-stretch gap-3">
+        <div className="flex w-full items-center justify-between gap-2">
+          <div>
+            <p className="font-code text-[10px] font-bold uppercase tracking-[0.2em] text-[#e879f9]">
+              Decrypted output
+            </p>
+            <h2 className="text-base font-bold text-white">Recovered data</h2>
           </div>
           <div className="flex items-center gap-2">
             {recipe.length === 0 && (
-              <span className="rounded-md px-2 py-0.5 text-xs font-medium" style={{ color: 'var(--text-muted)', background: 'var(--bg-elevated)' }}>
+              <span className="font-code rounded-full border border-[rgba(148,153,184,0.25)] px-2 py-0.5 text-[10px] text-[#9499b8]">
                 passthrough
               </span>
             )}
@@ -44,41 +43,37 @@ export function OutputPane() {
               type="button"
               onClick={copyOutput}
               disabled={!display}
-              className="rounded-md px-3 py-1 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25"
-              style={{ color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+              className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]"
             >
               Copy
             </button>
           </div>
         </div>
-
-        {/* Flag pattern */}
-        <div className="flex w-full items-center gap-2">
-          <span className="flex-shrink-0 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Flag regex</span>
+        <div className="flex items-center gap-2">
+          <span className="font-code text-[10px] uppercase tracking-widest text-[#6b7194]">Flag</span>
           <input
             type="text"
             value={flagPattern}
             onChange={(e) => setFlagPattern(e.target.value)}
-            className="font-code min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs outline-none transition-colors"
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            className="font-code min-w-0 flex-1 rounded-lg border border-[rgba(37,99,235,0.25)] bg-[rgba(0,0,0,0.35)] px-3 py-2 text-xs text-[#c4b5fd] outline-none focus:border-[rgba(168,85,247,0.45)]"
             spellCheck={false}
           />
         </div>
         {flagPatternError && (
-          <p className="text-xs font-medium" style={{ color: '#ffaa44' }}>{flagPatternError}</p>
+          <p className="text-xs font-medium text-[#fbbf24]">{flagPatternError}</p>
         )}
       </div>
 
       {outputError && recipe.length > 0 && (
-        <div className="flex items-center gap-2 px-4 py-2 text-sm" style={{ borderBottom: '1px solid var(--border)', color: 'var(--danger)', background: 'rgba(255,68,102,0.05)' }}>
-          <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        <div
+          className="flex items-center gap-2 border-b border-[rgba(251,113,133,0.25)] bg-[rgba(251,113,133,0.08)] px-4 py-2 text-sm text-[#fb7185]"
+          role="alert"
+        >
           {outputError}
         </div>
       )}
 
-      <pre className="font-code min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words p-4 text-sm leading-relaxed" style={{ color: '#aaccff' }}>
+      <pre className="font-code min-h-[200px] flex-1 overflow-auto whitespace-pre-wrap break-words px-5 py-4 text-[15px] leading-relaxed text-[#c7d2fe]">
         {patternCompileError ? display : <FlagHighlight text={display} pattern={flagPattern} />}
       </pre>
     </section>

@@ -5,7 +5,8 @@ import { useAppStore } from '../store/useAppStore'
 
 function recipeFromStore(): Recipe {
   return useAppStore.getState().recipe.map(({ operationId, params }) => ({
-    operationId, params: { ...params },
+    operationId,
+    params: { ...params },
   }))
 }
 
@@ -22,43 +23,59 @@ export function RecipeShare() {
 
   const copyJson = async () => {
     await navigator.clipboard.writeText(recipeToJson(recipeFromStore(), true))
-    showMessage('Copied JSON')
+    showMessage('Chain JSON copied')
   }
   const copyLink = async () => {
     await navigator.clipboard.writeText(buildShareUrl(recipeFromStore()))
-    showMessage('Copied link')
+    showMessage('Portal link copied')
   }
   const loadFromJson = () => {
     const { recipe, error } = recipeFromJson(importJson)
-    if (error || !recipe) { showMessage(error ?? 'Invalid JSON'); return }
+    if (error || !recipe) {
+      showMessage(error ?? 'Invalid JSON')
+      return
+    }
     loadRecipe(recipe)
     setImportJson('')
-    showMessage('Recipe loaded')
-  }
-
-  const btnStyle = {
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
-    color: 'var(--text-secondary)',
+    showMessage('Chain loaded')
   }
 
   return (
-    <div className="flex-shrink-0 px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={copyJson} disabled={recipeLength === 0} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25" style={btnStyle}>JSON</button>
-        <button type="button" onClick={copyLink} disabled={recipeLength === 0} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-25" style={btnStyle}>Link</button>
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={copyJson}
+          disabled={recipeLength === 0}
+          className="cb-btn cb-btn-ghost !text-[12px]"
+        >
+          Copy JSON
+        </button>
+        <button
+          type="button"
+          onClick={copyLink}
+          disabled={recipeLength === 0}
+          className="cb-btn cb-btn-ghost !text-[12px]"
+        >
+          Copy portal link
+        </button>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={importJson}
           onChange={(e) => setImportJson(e.target.value)}
-          placeholder="Paste recipe JSON..."
-          className="font-code min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs outline-none"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+          placeholder="Paste recipe JSON to import chain..."
+          className="font-code min-w-0 flex-1 rounded-xl border border-[rgba(37,99,235,0.25)] bg-[rgba(0,0,0,0.35)] px-4 py-3 text-xs text-[#c4b5fd] outline-none"
         />
-        <button type="button" onClick={loadFromJson} className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80" style={btnStyle}>Load</button>
+        <button type="button" onClick={loadFromJson} className="cb-btn cb-btn-primary !text-[12px]">
+          Import
+        </button>
       </div>
       {message && (
-        <p className="mt-1.5 text-xs font-semibold" style={{ color: 'var(--accent)' }}>{message}</p>
+        <p className="font-code text-xs text-[#4ade80]" role="status">
+          {message}
+        </p>
       )}
     </div>
   )
