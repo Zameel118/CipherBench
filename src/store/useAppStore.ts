@@ -16,10 +16,12 @@ export interface AppState {
   outputText: string
   outputError: string | undefined
   operationSearch: string
+  theme: 'light' | 'dark' | 'system'
   flagPattern: string
   flagPatternError: string | undefined
   setInput: (value: string) => void
   setOperationSearch: (value: string) => void
+  setTheme: (theme: 'light' | 'dark' | 'system') => void
   setFlagPattern: (pattern: string) => void
   addOperationToRecipe: (operationId: string) => void
   removeRecipeStep: (instanceId: string) => void
@@ -72,12 +74,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   outputText: '',
   outputError: undefined,
   operationSearch: '',
+  theme: 'system',
   flagPattern: DEFAULT_FLAG_PATTERN,
   flagPatternError: undefined,
 
   setInput: (value) => set({ input: value }),
 
   setOperationSearch: (value) => set({ operationSearch: value }),
+
+  setTheme: (theme) => set({ theme }),
 
   setFlagPattern: (pattern) => {
     set({ flagPattern: pattern, flagPatternError: undefined })

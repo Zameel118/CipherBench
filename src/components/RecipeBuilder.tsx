@@ -21,7 +21,7 @@ function ParamControl({
 
   if (type === 'boolean') {
     return (
-      <label className="flex items-center gap-2 text-xs text-slate-700">
+      <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
         <input
           type="checkbox"
           checked={Boolean(value)}
@@ -36,14 +36,14 @@ function ParamControl({
 
   if (type === 'select' && options) {
     return (
-      <label className="flex flex-col gap-0.5 text-xs text-slate-700">
-        <span className="text-slate-500">{paramName}</span>
+      <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
+        <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
         <select
           value={String(value)}
           onChange={(e) =>
             updateStepParams(step.instanceId, { [paramName]: e.target.value })
           }
-          className="rounded border border-slate-200 px-1.5 py-1 text-sm"
+          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         >
           {options.map((opt) => (
             <option key={opt} value={opt}>
@@ -57,8 +57,8 @@ function ParamControl({
 
   if (type === 'number') {
     return (
-      <label className="flex flex-col gap-0.5 text-xs text-slate-700">
-        <span className="text-slate-500">{paramName}</span>
+      <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
+        <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
         <input
           type="number"
           value={Number(value)}
@@ -67,22 +67,22 @@ function ParamControl({
               [paramName]: Number(e.target.value),
             })
           }
-          className="rounded border border-slate-200 px-1.5 py-1 text-sm"
+          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
     )
   }
 
   return (
-    <label className="flex flex-col gap-0.5 text-xs text-slate-700">
-      <span className="text-slate-500">{paramName}</span>
+    <label className="flex flex-col gap-0.5 text-xs text-slate-700 dark:text-slate-300">
+      <span className="text-slate-500 dark:text-slate-400">{paramName}</span>
       <input
         type="text"
         value={String(value)}
         onChange={(e) =>
           updateStepParams(step.instanceId, { [paramName]: e.target.value })
         }
-        className="rounded border border-slate-200 px-1.5 py-1 font-mono text-sm"
+        className="rounded border border-slate-200 bg-white px-1.5 py-1 font-mono text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
       />
     </label>
   )
@@ -114,33 +114,33 @@ export function RecipeBuilder() {
   }, [])
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-        <h2 className="text-sm font-semibold text-slate-800">Recipe</h2>
+    <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recipe</h2>
         <button
           type="button"
           onClick={clearRecipe}
           disabled={recipe.length === 0}
-          className="rounded px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+          className="rounded px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           Clear recipe
         </button>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
-        <div className="flex min-h-0 flex-col border-b border-slate-100 pb-3 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-3">
-          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-2">
+        <div className="flex min-h-0 flex-col border-b border-slate-100 pb-3 md:border-b-0 md:border-r md:pb-0 md:pr-3 dark:border-slate-800">
+          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
             Library
           </h3>
           <OperationLibrary />
         </div>
 
         <div className="flex min-h-0 flex-col">
-          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500">
+          <h3 className="mb-2 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
             Active steps
           </h3>
           {recipe.length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Add operations from the library. Drag steps to reorder.
             </p>
           ) : (
@@ -155,21 +155,21 @@ export function RecipeBuilder() {
                     onDragStart={() => onDragStart(index)}
                     onDragOver={(e) => onDragOver(e, index)}
                     onDragEnd={onDragEnd}
-                    className={`rounded-md border border-slate-200 bg-slate-50 p-2 ${
+                    className={`rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800/70 ${
                       dragIndex === index ? 'opacity-60 ring-2 ring-sky-300' : ''
                     }`}
                   >
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <span className="cursor-grab text-xs text-slate-400">⋮⋮</span>
-                        <span className="ml-1 text-sm font-medium text-slate-800">
+                        <span className="cursor-grab text-xs text-slate-400 dark:text-slate-500">::</span>
+                        <span className="ml-1 text-sm font-medium text-slate-800 dark:text-slate-100">
                           {index + 1}. {op.name}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeRecipeStep(step.instanceId)}
-                        className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-700 hover:bg-red-50"
+                        className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40"
                         aria-label={`Remove ${op.name}`}
                       >
                         Remove

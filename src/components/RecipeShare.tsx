@@ -49,8 +49,8 @@ export function RecipeShare() {
   }
 
   return (
-    <div className="border-t border-slate-100 px-3 py-2">
-      <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
+    <div className="border-t border-slate-100 px-3 py-2 dark:border-slate-800">
+      <p className="mb-2 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
         Save / share recipe
       </p>
       <div className="flex flex-wrap gap-2">
@@ -58,7 +58,7 @@ export function RecipeShare() {
           type="button"
           onClick={copyJson}
           disabled={recipeLength === 0}
-          className="rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-40"
+          className="rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800"
         >
           Copy JSON
         </button>
@@ -66,7 +66,7 @@ export function RecipeShare() {
           type="button"
           onClick={copyLink}
           disabled={recipeLength === 0}
-          className="rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-40"
+          className="rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800"
         >
           Copy link
         </button>
@@ -77,18 +77,18 @@ export function RecipeShare() {
           value={importJson}
           onChange={(e) => setImportJson(e.target.value)}
           placeholder='Paste recipe JSON…'
-          className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1 text-xs font-mono"
+          className="min-w-0 flex-1 rounded border border-slate-200 bg-white px-2 py-1 text-xs font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
         <button
           type="button"
           onClick={loadFromJson}
-          className="shrink-0 rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50"
+          className="shrink-0 rounded border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
         >
           Load
         </button>
       </div>
       {message && (
-        <p className="mt-1 text-xs text-slate-600" role="status">
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-300" role="status">
           {message}
         </p>
       )}

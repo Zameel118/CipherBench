@@ -67,6 +67,6 @@ export function flagMatchConfidence(match: string): number {
   if (match.length >= 8) score += 0.1
   if (match.length >= 16) score += 0.1
   if (/^(FLAG|CTF|flag|ctf)\{/i.test(match)) score += 0.2
-  if (/^[A-Za-z0-9_]+\{[A-Za-z0-9_\-]+\}$/.test(match)) score += 0.1
+  if (/^[A-Za-z0-9_]+\{[A-Za-z0-9_-]+\}$/.test(match)) score += 0.1
   return Math.min(1, score)
 }

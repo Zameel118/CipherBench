@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { Base64 } from 'js-base64'
 import {
   DEFAULT_FLAG_PATTERN,
   compileFlagRegex,
