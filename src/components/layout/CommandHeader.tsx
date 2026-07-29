@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import { Logo } from '../Logo'
+import { RecipeShare } from '../RecipeShare'
 import { useAppStore } from '../../store/useAppStore'
 
 export function CommandHeader({
@@ -14,88 +16,120 @@ export function CommandHeader({
   onOpenTour: () => void
   onOpenSop: () => void
 }) {
-  const clearRecipe = useAppStore((s) => s.clearRecipe)
+  const toggleTheme = useAppStore((s) => s.toggleTheme)
+  const theme = useAppStore((s) => s.theme)
+  const [shareOpen, setShareOpen] = useState(false)
+  const shareRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!shareOpen) return
+    const onDoc = (e: MouseEvent) => {
+      if (!shareRef.current?.contains(e.target as Node)) setShareOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [shareOpen])
 
   return (
-    <header className="cb-grid-bg relative flex-shrink-0 border-b border-[rgba(37,99,235,0.28)] px-4 py-3 lg:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3 lg:hidden">
-          <Logo size={32} />
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9499b8]">
-              CTF · SOC Mission Deck
-            </p>
-            <h1 className="text-lg font-extrabold tracking-tight text-white">CipherBench</h1>
-          </div>
-        </div>
-
-        <div className="hidden flex-col gap-1 lg:flex">
-          <div className="flex items-center gap-3">
-            <span className="cb-live-pill">Local secure</span>
-            <span className="font-code text-[10px] uppercase tracking-widest text-[#6b7194]">
-              Incident decode terminal
-            </span>
-          </div>
-          <h1 className="bg-gradient-to-r from-[#e879f9] via-[#a855f7] to-[#22d3ee] bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
-            CipherBench Portal
-          </h1>
-          <p className="max-w-xl text-sm text-[#9499b8]">
-            Trace the signal. Chain transforms. Hunt flags - inspired by elite CTF ops floors.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onOpenSop}
-            data-tour="sop-guide"
-            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]"
-          >
-            SOP guide
-          </button>
-          <button
-            type="button"
-            onClick={onOpenTour}
-            data-tour="tour-help"
-            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]"
-          >
-            Tour (?)
-          </button>
-          <button
-            type="button"
-            onClick={() => clearRecipe()}
-            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px] !text-[#fb7185]"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            onClick={onExecute}
-            disabled={recipeCount === 0}
-            className={`cb-btn cb-btn-primary ${runFlash ? 'scale-105' : ''}`}
-          >
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            Run chain
-          </button>
-          <div className="hidden items-center gap-2 sm:flex">
-            <kbd className="font-code rounded-md border border-[rgba(148,153,184,0.25)] bg-[rgba(0,0,0,0.35)] px-2 py-1 text-[10px] text-[#9499b8]">
-              Ctrl+Enter
-            </kbd>
-            <kbd className="font-code rounded-md border border-[rgba(148,153,184,0.25)] bg-[rgba(0,0,0,0.35)] px-2 py-1 text-[10px] text-[#9499b8]">
-              Ctrl+K
-            </kbd>
-          </div>
+    <header className="cb-header">
+      <div className="cb-brand" data-tour="brand">
+        <Logo size={30} />
+        <div>
+          <h1 className="cb-brand-name">CipherBench</h1>
+          <p className="cb-brand-sub">CTF / SOC workbench</p>
         </div>
       </div>
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent, rgba(168,85,247,0.6), rgba(34,211,238,0.5), transparent)',
-        }}
-      />
+
+      <div className="cb-header-actions">
+        <div className="relative" ref={shareRef}>
+          <button
+            type="button"
+            className="cb-btn cb-btn-ghost"
+            data-tour="transmit-panel"
+            onClick={() => setShareOpen((v) => !v)}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Share
+          </button>
+          {shareOpen && (
+            <div className="cb-share-pop">
+              <p className="mb-3 text-xs text-[var(--text-muted)]">
+                Export or import recipes. Input text is never included.
+              </p>
+              <RecipeShare />
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="cb-btn cb-btn-ghost"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3Z"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.75" />
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+          Theme
+        </button>
+
+        <button
+          type="button"
+          className="cb-btn cb-btn-ghost !px-2"
+          onClick={onOpenSop}
+          data-tour="sop-guide"
+          title="SOP guide"
+        >
+          SOP
+        </button>
+        <button
+          type="button"
+          className="cb-btn cb-btn-ghost !px-2"
+          onClick={onOpenTour}
+          data-tour="tour-help"
+          title="Tour"
+        >
+          ?
+        </button>
+
+        <button
+          type="button"
+          onClick={onExecute}
+          disabled={recipeCount === 0}
+          className={`cb-btn cb-btn-primary ${runFlash ? 'opacity-90' : ''}`}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Run
+        </button>
+      </div>
     </header>
   )
 }

@@ -6,14 +6,17 @@ function renderInline(text: string) {
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
-        <strong key={i} className="font-semibold text-[#e879f9]">
+        <strong key={i} className="font-semibold text-[var(--accent)]">
           {part.slice(2, -2)}
         </strong>
       )
     }
     if (part.startsWith('`') && part.endsWith('`')) {
       return (
-        <code key={i} className="font-code rounded bg-[rgba(0,0,0,0.35)] px-1 py-0.5 text-[12px] text-[#22d3ee]">
+        <code
+          key={i}
+          className="font-code rounded bg-[var(--bg-soft)] px-1 py-0.5 text-[12px] text-[var(--text)]"
+        >
           {part.slice(1, -1)}
         </code>
       )
@@ -34,7 +37,7 @@ function SopBody({ markdown }: { markdown: string }) {
     nodes.push(
       <Tag
         key={`list-${nodes.length}`}
-        className={`mb-4 space-y-1.5 pl-5 text-sm text-[#c7d2fe] ${listOrdered ? 'list-decimal' : 'list-disc'}`}
+        className={`mb-4 space-y-1.5 pl-5 text-sm text-[var(--text-muted)] ${listOrdered ? 'list-decimal' : 'list-disc'}`}
       >
         {listItems.map((item, idx) => (
           <li key={idx}>{renderInline(item)}</li>
@@ -54,7 +57,7 @@ function SopBody({ markdown }: { markdown: string }) {
     if (trimmed.startsWith('# ')) {
       flushList()
       nodes.push(
-        <h1 key={nodes.length} className="mb-4 text-xl font-extrabold text-white">
+        <h1 key={nodes.length} className="mb-4 text-xl font-bold text-[var(--text)]">
           {renderInline(trimmed.slice(2))}
         </h1>,
       )
@@ -65,7 +68,7 @@ function SopBody({ markdown }: { markdown: string }) {
       nodes.push(
         <h2
           key={nodes.length}
-          className="mb-3 mt-6 border-b border-[rgba(168,85,247,0.25)] pb-2 text-sm font-bold uppercase tracking-[0.12em] text-[#e879f9]"
+          className="mb-3 mt-6 border-b border-[var(--border)] pb-2 text-sm font-bold uppercase tracking-[0.12em] text-[var(--accent)]"
         >
           {renderInline(trimmed.slice(3))}
         </h2>,
@@ -75,7 +78,7 @@ function SopBody({ markdown }: { markdown: string }) {
     if (trimmed.startsWith('### ')) {
       flushList()
       nodes.push(
-        <h3 key={nodes.length} className="mb-2 mt-4 text-base font-bold text-[#22d3ee]">
+        <h3 key={nodes.length} className="mb-2 mt-4 text-base font-bold text-[var(--text)]">
           {renderInline(trimmed.slice(4))}
         </h3>,
       )
@@ -97,7 +100,7 @@ function SopBody({ markdown }: { markdown: string }) {
     }
     flushList()
     nodes.push(
-      <p key={nodes.length} className="mb-3 text-sm leading-relaxed text-[#9499b8]">
+      <p key={nodes.length} className="mb-3 text-sm leading-relaxed text-[var(--text-muted)]">
         {renderInline(trimmed)}
       </p>,
     )
@@ -121,15 +124,15 @@ export function SopGuidePanel({ open, onClose }: { open: boolean; onClose: () =>
   return (
     <div className="cb-sop-root" role="dialog" aria-modal="true" aria-label="SOP guide">
       <button type="button" className="cb-sop-backdrop" onClick={onClose} aria-label="Close SOP" />
-      <div className="cb-sop-panel cb-panel cb-terminal-chrome">
-        <header className="cb-panel-header flex-shrink-0">
+      <div className="cb-sop-panel">
+        <header className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-3">
           <div>
-            <p className="font-code text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
-              Mission documentation
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-dim)]">
+              Documentation
             </p>
-            <h2 className="text-base font-bold text-white">SOP guide (SOC + CTF)</h2>
+            <h2 className="text-base font-bold text-[var(--text)]">SOP guide (SOC + CTF)</h2>
           </div>
-          <button type="button" onClick={onClose} className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]">
+          <button type="button" onClick={onClose} className="cb-btn cb-btn-quiet !px-3 !py-1.5 !text-[11px]">
             Close
           </button>
         </header>

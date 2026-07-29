@@ -65,7 +65,7 @@ export function FlagHighlight({
         seg.hl ? (
           <mark
             key={seg.key}
-            className="rounded-md bg-[rgba(232,121,249,0.2)] px-1 py-0.5 font-semibold text-[#e879f9] ring-1 ring-[rgba(168,85,247,0.45)]"
+            className="rounded-md bg-[var(--accent-dim)] px-1 py-0.5 font-semibold text-[var(--accent)] ring-1 ring-[var(--accent-border)]"
           >
             {seg.text}
           </mark>

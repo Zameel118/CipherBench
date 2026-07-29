@@ -23,11 +23,11 @@ export function RecipeShare() {
 
   const copyJson = async () => {
     await navigator.clipboard.writeText(recipeToJson(recipeFromStore(), true))
-    showMessage('Chain JSON copied')
+    showMessage('Recipe JSON copied')
   }
   const copyLink = async () => {
     await navigator.clipboard.writeText(buildShareUrl(recipeFromStore()))
-    showMessage('Portal link copied')
+    showMessage('Share link copied')
   }
   const loadFromJson = () => {
     const { recipe, error } = recipeFromJson(importJson)
@@ -37,7 +37,7 @@ export function RecipeShare() {
     }
     loadRecipe(recipe)
     setImportJson('')
-    showMessage('Chain loaded')
+    showMessage('Recipe loaded')
   }
 
   return (
@@ -47,7 +47,7 @@ export function RecipeShare() {
           type="button"
           onClick={copyJson}
           disabled={recipeLength === 0}
-          className="cb-btn cb-btn-ghost !text-[12px]"
+          className="cb-btn cb-btn-quiet !text-[12px]"
         >
           Copy JSON
         </button>
@@ -55,9 +55,9 @@ export function RecipeShare() {
           type="button"
           onClick={copyLink}
           disabled={recipeLength === 0}
-          className="cb-btn cb-btn-ghost !text-[12px]"
+          className="cb-btn cb-btn-quiet !text-[12px]"
         >
-          Copy portal link
+          Copy link
         </button>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -65,15 +65,15 @@ export function RecipeShare() {
           type="text"
           value={importJson}
           onChange={(e) => setImportJson(e.target.value)}
-          placeholder="Paste recipe JSON to import chain..."
-          className="font-code min-w-0 flex-1 rounded-xl border border-[rgba(37,99,235,0.25)] bg-[rgba(0,0,0,0.35)] px-4 py-3 text-xs text-[#c4b5fd] outline-none"
+          placeholder="Paste recipe JSON..."
+          className="cb-field min-w-0 flex-1"
         />
         <button type="button" onClick={loadFromJson} className="cb-btn cb-btn-primary !text-[12px]">
           Import
         </button>
       </div>
       {message && (
-        <p className="font-code text-xs text-[#4ade80]" role="status">
+        <p className="font-code text-xs text-[var(--accent)]" role="status">
           {message}
         </p>
       )}

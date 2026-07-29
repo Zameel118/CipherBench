@@ -2,8 +2,10 @@ import { useEffect, useState, useCallback } from 'react'
 import { InputPane } from './components/InputPane'
 import { OutputPane } from './components/OutputPane'
 import { CommandHeader } from './components/layout/CommandHeader'
-import { SideRail } from './components/layout/SideRail'
-import { OpsSidePanel, type DeckTab } from './components/layout/OpsSidePanel'
+import { OperationLibrary } from './components/OperationLibrary'
+import { PipelineStrip } from './components/pipeline/PipelineStrip'
+import { StatusTray } from './components/StatusTray'
+import { MagicSuggestions } from './components/MagicSuggestions'
 import { useAppStore } from './store/useAppStore'
 import { TourGuide, shouldAutoShowTour } from './components/TourGuide'
 import { SopGuidePanel } from './components/SopGuidePanel'
@@ -13,22 +15,30 @@ function App() {
   const runCurrentRecipe = useAppStore((s) => s.runCurrentRecipe)
   const setOperationSearch = useAppStore((s) => s.setOperationSearch)
   const recipe = useAppStore((s) => s.recipe)
+  const input = useAppStore((s) => s.input)
+  const lastRunMs = useAppStore((s) => s.lastRunMs)
+  const theme = useAppStore((s) => s.theme)
   const [runFlash, setRunFlash] = useState(false)
-  const [deckTab, setDeckTab] = useState<DeckTab>('arsenal')
-  const [scrollRequest, setScrollRequest] = useState<{ tab: DeckTab; at: number } | null>(
-    null,
-  )
   const [tourOpen, setTourOpen] = useState(false)
   const [sopOpen, setSopOpen] = useState(false)
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
 
   useEffect(() => {
     hydrateRecipeFromUrl()
   }, [hydrateRecipeFromUrl])
 
   useEffect(() => {
-    document.documentElement.classList.add('dark')
-    document.documentElement.style.colorScheme = 'dark'
-  }, [])
+    const root = document.documentElement
+    const resolved =
+      theme === 'system'
+        ? window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark'
+        : theme
+    root.classList.toggle('light', resolved === 'light')
+    root.classList.toggle('dark', resolved === 'dark')
+    root.style.colorScheme = resolved
+  }, [theme])
 
   useEffect(() => {
     if (!shouldAutoShowTour()) return
@@ -46,20 +56,13 @@ function App() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== '?') return
       if (event.metaKey || event.ctrlKey) return
-
       const tag = (event.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-
       event.preventDefault()
       setTourOpen(true)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
-
-  const navigateOps = useCallback((tab: DeckTab) => {
-    setDeckTab(tab)
-    setScrollRequest({ tab, at: Date.now() })
   }, [])
 
   useEffect(() => {
@@ -72,66 +75,89 @@ function App() {
       }
       if (event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        navigateOps('arsenal')
         setOperationSearch('')
         window.setTimeout(() => {
           const el = document.getElementById('op-search') as HTMLInputElement | null
           el?.focus()
           el?.select()
-        }, 400)
+        }, 50)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [flashRun, setOperationSearch, navigateOps])
+  }, [flashRun, setOperationSearch])
 
-  const focusInput = () => {
-    const el = document.querySelector('#workbench-input textarea') as HTMLTextAreaElement | null
-    el?.focus()
-  }
+  const byteCount = byteLengthOf(input)
+  const stepLabel = `${recipe.length} step${recipe.length !== 1 ? 's' : ''}`
 
   return (
-    <div className="cb-root cb-scanlines flex h-screen overflow-hidden">
-      <SideRail deckTab={deckTab} onDeckTab={navigateOps} onScrollWorkbench={focusInput} />
-      <div className="cb-shell min-h-0">
-        <CommandHeader
-          recipeCount={recipe.length}
-          onExecute={flashRun}
-          runFlash={runFlash}
-          onOpenTour={() => setTourOpen(true)}
-          onOpenSop={() => setSopOpen(true)}
-        />
-        <div className="cb-workbench-row min-h-0 flex-1">
-          <div className="cb-stage min-h-0 flex-1" id="workbench">
+    <div className="cb-root">
+      <CommandHeader
+        recipeCount={recipe.length}
+        onExecute={flashRun}
+        runFlash={runFlash}
+        onOpenTour={() => setTourOpen(true)}
+        onOpenSop={() => setSopOpen(true)}
+      />
+
+      <div className="cb-main">
+        <aside className="cb-col">
+          <div className="cb-col-label">Operations</div>
+          <div className="cb-col-body">
+            <OperationLibrary />
+          </div>
+        </aside>
+
+        <aside className="cb-col">
+          <div className="cb-col-label">Recipe · {stepLabel}</div>
+          <div className="cb-col-body">
+            <PipelineStrip layout="vertical" />
+          </div>
+        </aside>
+
+        <section className="cb-col" id="workbench">
+          <MagicSuggestions open={suggestionsOpen} />
+          <div className="cb-io">
             <InputPane />
             <OutputPane />
+            <StatusTray onShowSuggestions={() => setSuggestionsOpen((v) => !v)} />
           </div>
-          <OpsSidePanel
-            activeTab={deckTab}
-            onTabChange={setDeckTab}
-            scrollRequest={scrollRequest}
-          />
-        </div>
-        <footer className="flex flex-shrink-0 items-center justify-between border-t border-[rgba(37,99,235,0.2)] px-6 py-2 text-[11px] text-[#6b7194]">
-          <span>CipherBench · client-side CTF/SOC workbench</span>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setSopOpen(true)}
-              className="font-code text-[11px] text-[#9499b8] underline-offset-2 hover:text-[#e879f9] hover:underline"
-            >
-              SOP guide
-            </button>
-            <span className="font-code">
-              {recipe.length} op{recipe.length !== 1 ? 's' : ''} armed
-            </span>
-          </div>
-        </footer>
-        <TourGuide open={tourOpen} onClose={() => setTourOpen(false)} onOpenSop={() => setSopOpen(true)} />
-        <SopGuidePanel open={sopOpen} onClose={() => setSopOpen(false)} />
+        </section>
       </div>
+
+      <footer className="cb-footer">
+        <span>
+          {recipe.length} op{recipe.length !== 1 ? 's' : ''} armed
+        </span>
+        <div className="cb-footer-metrics">
+          <span>{input.length.toLocaleString()} chars</span>
+          <span>·</span>
+          <span>{byteCount.toLocaleString()} bytes</span>
+          <span>·</span>
+          <span>{lastRunMs !== null ? `${lastRunMs}ms` : '-'}</span>
+          <span className="mx-1">·</span>
+          <button
+            type="button"
+            onClick={() => setSopOpen(true)}
+            className="border-none bg-transparent p-0 text-[var(--text-dim)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+          >
+            SOP
+          </button>
+        </div>
+      </footer>
+
+      <TourGuide open={tourOpen} onClose={() => setTourOpen(false)} onOpenSop={() => setSopOpen(true)} />
+      <SopGuidePanel open={sopOpen} onClose={() => setSopOpen(false)} />
     </div>
   )
+}
+
+function byteLengthOf(text: string) {
+  try {
+    return new TextEncoder().encode(text).length
+  } catch {
+    return text.length
+  }
 }
 
 export default App

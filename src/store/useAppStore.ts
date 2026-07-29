@@ -15,6 +15,7 @@ export interface AppState {
   recipe: RecipeStepInstance[]
   outputText: string
   outputError: string | undefined
+  lastRunMs: number | null
   operationSearch: string
   theme: 'light' | 'dark' | 'system'
   flagPattern: string
@@ -23,6 +24,7 @@ export interface AppState {
   setOperationSearch: (value: string) => void
   setTheme: (theme: 'light' | 'dark' | 'system') => void
   setFlagPattern: (pattern: string) => void
+  toggleTheme: () => void
   addOperationToRecipe: (operationId: string) => void
   removeRecipeStep: (instanceId: string) => void
   updateStepParams: (
@@ -73,8 +75,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   recipe: [],
   outputText: '',
   outputError: undefined,
+  lastRunMs: null,
   operationSearch: '',
-  theme: 'system',
+  theme: 'dark',
   flagPattern: DEFAULT_FLAG_PATTERN,
   flagPatternError: undefined,
 
@@ -83,6 +86,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   setOperationSearch: (value) => set({ operationSearch: value }),
 
   setTheme: (theme) => set({ theme }),
+
+  toggleTheme: () =>
+    set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
 
   setFlagPattern: (pattern) => {
     set({ flagPattern: pattern, flagPatternError: undefined })
@@ -136,12 +142,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   clearRecipe: () => {
-    set({ recipe: [], outputText: '', outputError: undefined })
+    set({ recipe: [], outputText: '', outputError: undefined, lastRunMs: null })
     get().runCurrentRecipe()
   },
 
   resetInput: () => {
-    set({ input: '', outputText: '', outputError: undefined })
+    set({ input: '', outputText: '', outputError: undefined, lastRunMs: null })
     get().runCurrentRecipe()
   },
 
@@ -160,10 +166,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   runCurrentRecipe: () => {
     const { input, recipe } = get()
+    const started = performance.now()
     const result = runRecipe(input, recipeToSteps(recipe), operationsMap)
     set({
       outputText: result.output.data,
       outputError: result.output.error,
+      lastRunMs: Math.max(0, Math.round(performance.now() - started)),
     })
   },
 }))

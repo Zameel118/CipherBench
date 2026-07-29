@@ -25,7 +25,7 @@ function uniqueSorted(matches: Iterable<string>): string[] {
   return [...new Set(matches)].sort((a, b) => a.localeCompare(b))
 }
 
-function extractFromText(text: string): ExtractedIocs {
+export function extractFromText(text: string): ExtractedIocs {
   const urls = uniqueSorted(text.match(RE.url) ?? [])
   const emails = uniqueSorted(text.match(RE.email) ?? [])
   const ipv4 = uniqueSorted(text.match(RE.ipv4) ?? [])
@@ -55,6 +55,19 @@ function extractFromText(text: string): ExtractedIocs {
   )
 
   return { ipv4, domains, urls, md5, sha1, sha256, emails }
+}
+
+export function countIocs(text: string): number {
+  const iocs = extractFromText(text)
+  return (
+    iocs.ipv4.length +
+    iocs.domains.length +
+    iocs.urls.length +
+    iocs.md5.length +
+    iocs.sha1.length +
+    iocs.sha256.length +
+    iocs.emails.length
+  )
 }
 
 function formatIocs(iocs: ExtractedIocs): string {
@@ -92,4 +105,4 @@ export const iocExtract: Operation = {
   },
 }
 
-export { extractFromText, formatIocs }
+export { formatIocs }
