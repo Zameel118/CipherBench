@@ -103,7 +103,10 @@ export function RecipeBuilder() {
   const onDragEnd = useCallback(() => setDragIndex(null), [])
 
   return (
-    <section className="card flex min-h-0 flex-col">
+    <section
+      className="card flex min-h-0 flex-col"
+      style={{ borderTop: '2px solid #ffcc00' }}
+    >
       <div className="card-header">
         <div className="flex items-center gap-2.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#ffcc00', boxShadow: '0 0 8px rgba(255,204,0,0.5)' }} />

@@ -82,7 +82,7 @@ export function OperationLibrary() {
                 style={{ background: isCollapsed ? 'transparent' : `${color}08` }}
               >
                 <span className="inline-block h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
-                <span className="flex-1 text-xs font-bold uppercase tracking-[0.15em]" style={{ color }}>
+                <span className="flex-1 text-sm font-bold uppercase tracking-[0.15em]" style={{ color }}>
                   {cat}
                 </span>
                 <span className="font-code rounded-md px-1.5 py-0.5 text-xs font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>

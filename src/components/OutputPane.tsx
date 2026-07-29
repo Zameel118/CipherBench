@@ -24,7 +24,10 @@ export function OutputPane() {
   }, [display])
 
   return (
-    <section className="card flex min-h-0 flex-col">
+    <section
+      className="card flex min-h-0 flex-col"
+      style={{ borderTop: '2px solid #44aaff' }}
+    >
       <div className="card-header flex-col !items-start gap-2">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2.5">

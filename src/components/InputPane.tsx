@@ -18,7 +18,10 @@ export function InputPane() {
   const charCount = useMemo(() => input.length, [input])
 
   return (
-    <section className="card glow-green flex min-h-0 flex-col">
+    <section
+      className="card glow-green flex min-h-0 flex-col"
+      style={{ borderTop: '2px solid var(--accent)' }}
+    >
       <div className="card-header">
         <div className="flex items-center gap-2.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />

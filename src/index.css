@@ -2,16 +2,20 @@
 @import 'tailwindcss';
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-card: #111118;
-  --bg-elevated: #16161f;
-  --border: #1e1e2e;
-  --accent: #00ff88;
-  --accent-dim: #00cc6a;
-  --accent-glow: rgba(0, 255, 136, 0.15);
-  --text-primary: #e8e8ec;
-  --text-secondary: #8888a0;
-  --text-muted: #555566;
+  --bg-primary: #070713;
+  --bg-card: #0b0b16;
+  --bg-elevated: #111124;
+  --border: #2b2140;
+
+  /* Branding */
+  --accent: #2cff95;
+  --accent-dim: #19dd80;
+  --accent-glow: rgba(44, 255, 149, 0.22);
+
+  /* Text */
+  --text-primary: #eef0ff;
+  --text-secondary: #bfc3ef;
+  --text-muted: #8a8fb9;
   --danger: #ff4466;
 
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -20,43 +24,101 @@
   background-color: var(--bg-primary);
 }
 
-html { background-color: var(--bg-primary); }
-body { margin: 0; min-height: 100vh; }
-#root { min-height: 100vh; }
-* { box-sizing: border-box; }
+html {
+  background-color: var(--bg-primary);
+}
 
-::selection { background: rgba(0, 255, 136, 0.2); }
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(44, 255, 149, 0.22);
+}
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2840;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3660;
+}
+
+/* Global background: subtle grid + neon bloom */
+.cyber-bg {
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(44, 255, 149, 0.1) 0%, transparent 46%),
+    radial-gradient(circle at 78% 0%, rgba(68, 170, 255, 0.08) 0%, transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    30px 30px,
+    30px 30px;
+}
 
 /* Card panels */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(17, 17, 36, 0.96) 0%, rgba(11, 11, 22, 0.98) 100%);
+  border: 1px solid rgba(43, 33, 64, 0.95);
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(44, 255, 149, 0.02),
+    0 10px 45px rgba(0, 0, 0, 0.45);
 }
 
 .card-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(43, 33, 64, 0.9);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 /* Glow effects */
-.glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.08), inset 0 1px 0 rgba(0, 255, 136, 0.05); }
-.glow-line { background: linear-gradient(90deg, transparent, var(--accent), transparent); height: 1px; }
+.glow-green {
+  box-shadow:
+    0 0 18px rgba(44, 255, 149, 0.13),
+    inset 0 1px 0 rgba(44, 255, 149, 0.06);
+}
+
+.glow-line {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  height: 1px;
+}
 
 /* Scan line animation */
 @keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
 }
 
 .scanline::after {
@@ -66,14 +128,32 @@ body { margin: 0; min-height: 100vh; }
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.06), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(44, 255, 149, 0.16),
+    transparent
+  );
   animation: scanline 8s linear infinite;
   pointer-events: none;
 }
 
 /* Terminal cursor blink */
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-.cursor-blink { animation: blink 1s step-end infinite; }
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
 
 /* Mono font for code areas */
-.font-code { font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace; }
+.font-code {
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+}

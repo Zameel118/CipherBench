@@ -47,7 +47,7 @@ function App() {
   }
 
   return (
-    <div className="scanline relative flex h-screen flex-col overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+    <div className="scanline cyber-bg relative flex h-screen flex-col overflow-hidden">
       {/* ─── HEADER ─── */}
       <header className="relative z-10 flex-shrink-0 px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
         <div className="mx-auto flex max-w-[1920px] items-center justify-between">
@@ -95,7 +95,7 @@ function App() {
       </header>
 
       {/* ─── MAIN ─── */}
-      <main className="mx-auto grid min-h-0 w-full max-w-[1920px] flex-1 grid-cols-1 gap-3 overflow-hidden p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
+      <main className="mx-auto grid min-h-0 w-full max-w-[1920px] flex-1 grid-cols-1 gap-4 overflow-hidden p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
         <InputPane />
         <RecipeBuilder />
         <OutputPane />
