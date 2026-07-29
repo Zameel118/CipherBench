@@ -75,8 +75,8 @@ export function suggestOperations(
       score = extra
       reason =
         op.id === 'xor-cipher'
-          ? 'High byte entropy — try XOR'
-          : 'Mostly letters — try Caesar shifts'
+          ? 'High byte entropy - try XOR'
+          : 'Mostly letters - try Caesar shifts'
     }
 
     if (score > 0) {

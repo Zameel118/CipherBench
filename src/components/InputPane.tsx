@@ -22,7 +22,11 @@ export function InputPane() {
   }
 
   return (
-    <section className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0" id="workbench-input">
+    <section
+      className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0"
+      id="workbench-input"
+      data-tour="workbench-input"
+    >
       <div className="cb-panel-header">
         <div>
           <p className="font-code text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">

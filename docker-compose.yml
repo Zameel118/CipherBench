@@ -1,9 +1,16 @@
+# Local testing only — not for production deployment.
+# After code changes: npm run docker:rebuild  (or docker compose up -d --build --force-recreate)
+name: cipherbench-local
+
 services:
   cipherbench:
     build:
       context: .
       dockerfile: Dockerfile
       target: serve
+    image: cipherbench-local:latest
+    container_name: cipherbench-local
     ports:
-      - "5173:80"
-
+      # Bind to loopback so the preview is only reachable on this machine.
+      - "127.0.0.1:5173:80"
+    restart: unless-stopped

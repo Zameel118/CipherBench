@@ -15,7 +15,7 @@ export interface RecipeRunResult {
 }
 
 /**
- * Pure recipe runner — no React, no DOM, no store.
+ * Pure recipe runner - no React, no DOM, no store.
  * Pipes each step's output into the next step's input.
  * Stops on the first step that returns an `error` (or if an operation id is unknown).
  */

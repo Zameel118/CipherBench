@@ -148,16 +148,16 @@ body,
   padding: 16px;
   border-radius: 14px;
   border: 1px solid rgba(37, 99, 235, 0.15);
-  background: rgba(6, 8, 18, 0.35);
+  background: rgba(6, 8, 18, 0.5);
   backdrop-filter: blur(6px);
-  opacity: 0.38;
-  transform: translateY(6px) scale(0.985);
+  opacity: 0.55;
+  transform: translateY(4px) scale(0.995);
   transition:
-    opacity 0.4s ease,
-    transform 0.4s ease,
-    background 0.4s ease,
-    border-color 0.4s ease,
-    box-shadow 0.4s ease;
+    opacity 0.28s ease,
+    transform 0.28s ease,
+    background 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
 }
 
 .cb-ops-section[data-inview='true'] {
@@ -403,4 +403,216 @@ body,
 ::-webkit-scrollbar-thumb {
   background: #2e2e48;
   border-radius: 4px;
+}
+
+/* Tour + SOP overlays (CipherBench theme) */
+.cb-tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.cb-tour-shade {
+  z-index: 200;
+  pointer-events: auto;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(3, 3, 8, 0.88);
+  backdrop-filter: blur(4px);
+}
+
+.cb-tour-spotlight {
+  pointer-events: none;
+  position: fixed;
+  z-index: 205;
+  border-radius: 14px;
+  border: 2px solid rgba(232, 121, 249, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.25),
+    0 0 48px -8px rgba(168, 85, 247, 0.55),
+    inset 0 1px 0 rgba(34, 211, 238, 0.12);
+}
+
+.cb-tour-target {
+  position: relative;
+  z-index: 210 !important;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.45),
+    0 16px 56px rgba(0, 0, 0, 0.65) !important;
+  background-color: rgba(10, 14, 28, 0.98) !important;
+}
+
+.cb-tour-tooltip {
+  position: fixed;
+  z-index: 220;
+  width: min(420px, calc(100vw - 24px));
+  pointer-events: auto;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: linear-gradient(
+    165deg,
+    rgba(10, 14, 28, 0.98) 0%,
+    rgba(3, 3, 8, 0.99) 50%,
+    rgba(18, 18, 31, 0.96) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(34, 211, 238, 0.08),
+    0 24px 64px rgba(0, 0, 0, 0.7),
+    0 0 80px -24px rgba(168, 85, 247, 0.35);
+  transition:
+    top 0.4s ease-out,
+    left 0.4s ease-out,
+    opacity 0.28s ease-out,
+    transform 0.28s ease-out;
+}
+
+.cb-tour-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.22);
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.12), transparent 72%);
+  padding: 10px 16px;
+}
+
+.cb-tour-step {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ctf-magenta);
+}
+
+.cb-tour-close {
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.cb-tour-close:hover {
+  color: var(--signal-live);
+}
+
+.cb-tour-tooltip-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid rgba(37, 99, 235, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px 16px;
+}
+
+.cb-tour-skip {
+  border: none;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.cb-tour-skip:hover {
+  color: var(--manifest);
+}
+
+.cb-tour-progress {
+  display: flex;
+  gap: 4px;
+}
+
+.cb-tour-progress-seg {
+  height: 3px;
+  flex: 1;
+  border: none;
+  border-radius: 2px;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(148, 153, 184, 0.2);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.cb-tour-progress-seg.is-done {
+  background: rgba(168, 85, 247, 0.45);
+}
+
+.cb-tour-progress-seg.is-active {
+  background: linear-gradient(90deg, var(--ctf-magenta), var(--ctf-purple));
+  transform: scaleY(1.4);
+}
+
+.cb-tour-tooltip.is-entering {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+.cb-tour-tooltip.is-ready {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.cb-tour-body-fade {
+  animation: tip-body-in 0.32s ease-out;
+}
+
+@keyframes tip-body-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cb-sop-root {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cb-sop-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  cursor: pointer;
+  background: rgba(3, 3, 8, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.cb-sop-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-height: min(88vh, 900px);
+  width: min(720px, 100%);
+  flex-direction: column;
+}
+
+.cb-sop-scroll {
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-tour-body-fade {
+    animation: none !important;
+  }
 }

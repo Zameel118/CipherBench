@@ -5,7 +5,7 @@ import type { Operation } from '../../core/types'
  * PowerShell -EncodedCommand uses UTF-16LE code units, then Base64.
  * Attackers abuse this in LOLBin chains because the payload is opaque in
  * process command lines and many EDR rules focus on script contents, not the
- * encoded blob — decoding is a routine IR triage step.
+ * encoded blob - decoding is a routine IR triage step.
  */
 function utf16LeBytesToString(bytes: Uint8Array): string {
   if (bytes.length % 2 !== 0) {

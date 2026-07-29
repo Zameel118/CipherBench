@@ -55,10 +55,11 @@ export function OperationLibrary({ compact = false }: { compact?: boolean }) {
       </label>
       <input
         id="op-search"
+        data-tour="arsenal-search"
         type="search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search arsenal — base64, jwt, xor..."
+        placeholder="Search arsenal - base64, jwt, xor..."
         className="font-code mb-3 w-full rounded-xl border border-[rgba(37,99,235,0.3)] bg-[rgba(0,0,0,0.4)] px-4 py-3 text-sm text-white outline-none placeholder:text-[#6b7194] focus:border-[rgba(168,85,247,0.5)]"
       />
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">

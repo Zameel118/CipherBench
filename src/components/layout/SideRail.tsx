@@ -22,7 +22,9 @@ export function SideRail({
     <aside
       className="flex w-[56px] flex-shrink-0 flex-col items-center gap-2 border-r border-[rgba(37,99,235,0.25)] bg-[rgba(3,3,8,0.85)] py-4 backdrop-blur-md md:w-[72px]"
     >
-      <Logo size={36} />
+      <div data-tour="brand">
+        <Logo size={36} />
+      </div>
       <div className="mt-2 h-px w-8 bg-[rgba(168,85,247,0.35)]" />
       <nav className="flex flex-1 flex-col gap-1 pt-2">
         {items.map((item) => {
@@ -32,6 +34,15 @@ export function SideRail({
               key={item.id}
               type="button"
               title={item.label}
+              data-tour={
+                item.id === 'chain'
+                  ? 'ops-chain-nav'
+                  : item.id === 'arsenal'
+                    ? 'arsenal-nav'
+                    : item.id === 'share'
+                      ? 'transmit-nav'
+                      : 'portal-nav'
+              }
               onClick={() => {
                 if (item.tab) onDeckTab(item.tab)
                 item.action?.()

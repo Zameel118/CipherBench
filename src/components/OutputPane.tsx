@@ -24,7 +24,11 @@ export function OutputPane() {
   }, [display])
 
   return (
-    <section className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0" id="workbench-output">
+    <section
+      className="cb-panel cb-terminal-chrome min-h-[280px] lg:min-h-0"
+      id="workbench-output"
+      data-tour="decrypted-output"
+    >
       <div className="cb-panel-header flex-col !items-stretch gap-3">
         <div className="flex w-full items-center justify-between gap-2">
           <div>

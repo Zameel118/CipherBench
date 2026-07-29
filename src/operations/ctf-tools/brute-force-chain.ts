@@ -13,7 +13,7 @@ import { hexDecode } from '../encoding/hex'
 import { urlDecode } from '../encoding/url'
 import { xorCipher, printableRatio } from '../encryption/xor'
 
-/** Ops needed for preset chains — avoids circular import via operations/index. */
+/** Ops needed for preset chains - avoids circular import via operations/index. */
 const chainOperations = new Map<string, Operation>([
   [base64Decode.id, base64Decode],
   [hexDecode.id, hexDecode],

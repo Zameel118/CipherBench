@@ -10,6 +10,8 @@ COPY package*.json ./
 RUN npm install --no-audit --no-fund --prefer-offline || npm install --no-audit --no-fund
 
 COPY . .
+# Re-install on Alpine so Vite/Rolldown native bindings match the Linux musl target.
+RUN npm install --no-audit --no-fund
 RUN npm run build
 
 # --- Production stage: serve static dist/ with nginx ---

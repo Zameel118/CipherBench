@@ -42,7 +42,7 @@ export function OpsDeck({
         {tab === 'share' && (
           <div className="p-4">
             <p className="mb-3 text-sm text-[#9499b8]">
-              Export your ops chain as JSON or a shareable URL — input data is never included.
+              Export your ops chain as JSON or a shareable URL - input data is never included.
             </p>
             <RecipeShare />
           </div>

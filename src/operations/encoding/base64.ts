@@ -19,7 +19,7 @@ function base64DetectConfidence(input: string): number {
 
 /**
  * Base64 decode (From Base64).
- * Uses js-base64 rather than hand-rolled bit packing — alphabet edge cases
+ * Uses js-base64 rather than hand-rolled bit packing - alphabet edge cases
  * (padding, URL-safe alphabet) are easy to get wrong and hard to spot in review.
  */
 export const base64Decode: Operation = {

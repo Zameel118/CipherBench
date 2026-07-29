@@ -58,11 +58,12 @@ export function OpsSidePanel({
             }
           }
         }
-        if (best && best.ratio >= 0.35) {
+        // Lower threshold so the next panel becomes "live" sooner while scrolling.
+        if (best && best.ratio >= 0.22) {
           onTabChange(best.id)
         }
       },
-      { root, threshold: [0.2, 0.35, 0.55, 0.75], rootMargin: '-8% 0px -8% 0px' },
+      { root, threshold: [0.12, 0.22, 0.35, 0.55, 0.75], rootMargin: '-4% 0px -4% 0px' },
     )
 
     sections.forEach((el) => observer.observe(el))
@@ -75,7 +76,7 @@ export function OpsSidePanel({
         <p className="font-code text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7194]">
           Mission modules
         </p>
-        <p className="text-xs text-[#9499b8]">Scroll the rail — focus unlocks each panel</p>
+        <p className="text-xs text-[#9499b8]">Scroll the rail - focus unlocks each panel</p>
       </div>
       <div ref={scrollRef} className="cb-ops-scroll min-h-0 flex-1">
         {SECTIONS.map((sec) => (
@@ -83,6 +84,13 @@ export function OpsSidePanel({
             key={sec.id}
             id={`ops-section-${sec.id}`}
             data-ops-section={sec.id}
+            data-tour={
+              sec.id === 'pipeline'
+                ? 'ops-chain-panel'
+                : sec.id === 'share'
+                  ? 'transmit-panel'
+                  : 'arsenal-panel'
+            }
             data-inview={activeTab === sec.id ? 'true' : 'false'}
             className="cb-ops-section"
           >

@@ -9,7 +9,7 @@ export interface FlagMatch {
 
 /**
  * Reject patterns that are likely to cause catastrophic backtracking.
- * This is heuristic, not complete — keeps user regex reasonably safe.
+ * This is heuristic, not complete - keeps user regex reasonably safe.
  */
 export function validateFlagPattern(pattern: string): string | undefined {
   if (pattern.length === 0) {

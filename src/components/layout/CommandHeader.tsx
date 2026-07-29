@@ -1,15 +1,21 @@
 import { Logo } from '../Logo'
-import { MissionPresets } from '../MissionPresets'
+import { useAppStore } from '../../store/useAppStore'
 
 export function CommandHeader({
   recipeCount,
   onExecute,
   runFlash,
+  onOpenTour,
+  onOpenSop,
 }: {
   recipeCount: number
   onExecute: () => void
   runFlash: boolean
+  onOpenTour: () => void
+  onOpenSop: () => void
 }) {
+  const clearRecipe = useAppStore((s) => s.clearRecipe)
+
   return (
     <header className="cb-grid-bg relative flex-shrink-0 border-b border-[rgba(37,99,235,0.28)] px-4 py-3 lg:px-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -34,12 +40,34 @@ export function CommandHeader({
             CipherBench Portal
           </h1>
           <p className="max-w-xl text-sm text-[#9499b8]">
-            Trace the signal. Chain transforms. Hunt flags — inspired by elite CTF ops floors.
+            Trace the signal. Chain transforms. Hunt flags - inspired by elite CTF ops floors.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <MissionPresets />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={onOpenSop}
+            data-tour="sop-guide"
+            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]"
+          >
+            SOP guide
+          </button>
+          <button
+            type="button"
+            onClick={onOpenTour}
+            data-tour="tour-help"
+            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px]"
+          >
+            Tour (?)
+          </button>
+          <button
+            type="button"
+            onClick={() => clearRecipe()}
+            className="cb-btn cb-btn-ghost !px-3 !py-1.5 !text-[11px] !text-[#fb7185]"
+          >
+            Reset
+          </button>
           <button
             type="button"
             onClick={onExecute}

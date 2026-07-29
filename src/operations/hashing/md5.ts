@@ -2,7 +2,7 @@ import CryptoJS from 'crypto-js'
 import type { Operation } from '../../core/types'
 
 /**
- * MD5 via crypto-js — not for new security designs, but still common in
+ * MD5 via crypto-js - not for new security designs, but still common in
  * legacy forensics and CTF hash-cracking exercises.
  */
 export const md5Hash: Operation = {
