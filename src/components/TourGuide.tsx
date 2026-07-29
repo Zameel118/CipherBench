@@ -58,14 +58,14 @@ const STEPS: Step[] = [
     id: 'sop',
     target: 'sop-guide',
     title: 'SOP guide',
-    body: 'Full SOC + CTF playbook: workflows, specialized tools, examples, and shortcuts.',
+    body: 'Opens the full SOP in a new tab: project overview, specialties, tool catalog, security model, and deploy notes.',
     placement: 'bottom',
   },
   {
     id: 'help',
     target: 'tour-help',
     title: 'You are set',
-    body: 'Press ? to replay this tour. Esc closes overlays. Use SOP for deep reference.',
+    body: 'Press ? to replay this tour. Esc closes menus. Use SOP (new tab) for deep reference.',
     placement: 'bottom',
   },
 ]

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Logo } from '../Logo'
 import { RecipeShare } from '../RecipeShare'
 import { THEME_OPTIONS } from '../../core/themes'
+import { openSopInNewTab } from '../../core/export'
 import { useAppStore } from '../../store/useAppStore'
 
 export function CommandHeader({
@@ -9,13 +10,11 @@ export function CommandHeader({
   onExecute,
   runFlash,
   onOpenTour,
-  onOpenSop,
 }: {
   recipeCount: number
   onExecute: () => void
   runFlash: boolean
   onOpenTour: () => void
-  onOpenSop: () => void
 }) {
   const setTheme = useAppStore((s) => s.setTheme)
   const theme = useAppStore((s) => s.theme)
@@ -27,22 +26,32 @@ export function CommandHeader({
   const themeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!shareOpen && !themeOpen) return
-    const onDoc = (e: MouseEvent) => {
+    if (!shareOpen && !themeOpen) return undefined
+
+    const onPointerDown = (e: PointerEvent) => {
       const t = e.target as Node
-      if (shareOpen && !shareRef.current?.contains(t)) setShareOpen(false)
-      if (themeOpen && !themeRef.current?.contains(t)) setThemeOpen(false)
+      // Defer close so menu item click handlers always run first.
+      window.setTimeout(() => {
+        if (shareOpen && shareRef.current && !shareRef.current.contains(t)) {
+          setShareOpen(false)
+        }
+        if (themeOpen && themeRef.current && !themeRef.current.contains(t)) {
+          setThemeOpen(false)
+        }
+      }, 0)
     }
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setShareOpen(false)
         setThemeOpen(false)
       }
     }
-    document.addEventListener('mousedown', onDoc)
+
+    document.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('keydown', onKey)
     return () => {
-      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKey)
     }
   }, [shareOpen, themeOpen])
@@ -96,7 +105,10 @@ export function CommandHeader({
             <span className="text-[10px] opacity-70">{shareOpen ? '▴' : '▾'}</span>
           </button>
           {shareOpen && (
-            <div className="cb-share-pop">
+            <div
+              className="cb-share-pop"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               <RecipeShare onDone={() => setShareOpen(false)} />
             </div>
           )}
@@ -126,7 +138,11 @@ export function CommandHeader({
             <span className="text-[10px] opacity-60">{themeOpen ? '▴' : '▾'}</span>
           </button>
           {themeOpen && (
-            <div className="cb-menu cb-theme-menu" role="menu">
+            <div
+              className="cb-menu cb-theme-menu"
+              role="menu"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
@@ -134,7 +150,9 @@ export function CommandHeader({
                   role="menuitem"
                   className="cb-theme-option"
                   data-active={theme === opt.id ? 'true' : undefined}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     setTheme(opt.id)
                     setThemeOpen(false)
                   }}
@@ -157,9 +175,9 @@ export function CommandHeader({
         <button
           type="button"
           className="cb-btn cb-btn-ghost !px-2"
-          onClick={onOpenSop}
           data-tour="sop-guide"
-          title="SOP guide"
+          title="Open full SOP in a new tab"
+          onClick={() => openSopInNewTab()}
         >
           SOP
         </button>

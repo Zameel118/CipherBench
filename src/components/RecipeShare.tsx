@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buildShareUrl, recipeToJson, recipeFromJson } from '../core/recipe-serializer'
+import { copyText, downloadTextFile } from '../core/export'
 import type { Recipe } from '../core/types'
 import { useAppStore } from '../store/useAppStore'
 
@@ -16,45 +17,76 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
   const recipeHistory = useAppStore((s) => s.recipeHistory)
   const loadHistoryEntry = useAppStore((s) => s.loadHistoryEntry)
   const recipeLength = useAppStore((s) => s.recipe.length)
+  const input = useAppStore((s) => s.input)
+  const outputText = useAppStore((s) => s.outputText)
+  const recipe = useAppStore((s) => s.recipe)
   const [importJson, setImportJson] = useState('')
   const [message, setMessage] = useState<string | null>(null)
 
+  const display = recipe.length === 0 ? input : outputText
+  const hasOutput = display.trim().length > 0
+
   const showMessage = (text: string) => {
     setMessage(text)
-    window.setTimeout(() => setMessage(null), 2500)
+    window.setTimeout(() => setMessage(null), 2800)
+  }
+
+  const requireRecipe = () => {
+    if (recipeLength === 0) {
+      showMessage('add ops to the recipe first')
+      return false
+    }
+    return true
   }
 
   const copyJson = async () => {
-    await navigator.clipboard.writeText(recipeToJson(recipeFromStore(), true))
-    showMessage('recipe JSON copied')
+    if (!requireRecipe()) return
+    const ok = await copyText(recipeToJson(recipeFromStore(), true))
+    showMessage(ok ? 'recipe JSON copied' : 'clipboard blocked')
   }
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(buildShareUrl(recipeFromStore()))
-    showMessage('share link copied')
+    if (!requireRecipe()) return
+    const ok = await copyText(buildShareUrl(recipeFromStore()))
+    showMessage(ok ? 'share link copied' : 'clipboard blocked')
   }
 
-  const downloadJson = () => {
-    const blob = new Blob([recipeToJson(recipeFromStore(), true)], {
-      type: 'application/json',
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `cipherbench-recipe-${Date.now()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+  const downloadRecipe = () => {
+    if (!requireRecipe()) return
+    downloadTextFile(
+      `cipherbench-recipe-${Date.now()}.json`,
+      recipeToJson(recipeFromStore(), true),
+      'application/json',
+    )
     saveRecipeToHistory()
-    showMessage('recipe downloaded + saved to history')
+    showMessage('recipe downloaded')
+  }
+
+  const downloadOutput = () => {
+    if (!hasOutput) {
+      showMessage('nothing to download yet')
+      return
+    }
+    downloadTextFile(`cipherbench-output-${Date.now()}.txt`, display, 'text/plain')
+    showMessage('output downloaded')
+  }
+
+  const copyOutput = async () => {
+    if (!hasOutput) {
+      showMessage('nothing to copy yet')
+      return
+    }
+    const ok = await copyText(display)
+    showMessage(ok ? 'output copied' : 'clipboard blocked')
   }
 
   const loadFromJson = () => {
-    const { recipe, error } = recipeFromJson(importJson)
-    if (error || !recipe) {
+    const { recipe: parsed, error } = recipeFromJson(importJson)
+    if (error || !parsed) {
       showMessage(error ?? 'invalid JSON')
       return
     }
-    loadRecipe(recipe)
+    loadRecipe(parsed)
     setImportJson('')
     showMessage('recipe loaded')
     onDone?.()
@@ -63,45 +95,38 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
   return (
     <div className="space-y-3">
       <p className="font-code text-[11px] text-[var(--text-muted)]">
-        Transmit recipes only - input never leaves this browser.
+        Transmit recipes / results. Pasted input stays in this browser.
       </p>
 
       <div className="cb-share-grid">
-        <button
-          type="button"
-          className="cb-share-action"
-          onClick={copyJson}
-          disabled={recipeLength === 0}
-        >
+        <button type="button" className="cb-share-action" onClick={copyJson}>
           <strong>Copy JSON</strong>
-          <span>clipboard payload</span>
+          <span>recipe to clipboard</span>
         </button>
-        <button
-          type="button"
-          className="cb-share-action"
-          onClick={copyLink}
-          disabled={recipeLength === 0}
-        >
+        <button type="button" className="cb-share-action" onClick={copyLink}>
           <strong>Copy link</strong>
-          <span>URL with recipe</span>
+          <span>shareable recipe URL</span>
         </button>
-        <button
-          type="button"
-          className="cb-share-action"
-          onClick={downloadJson}
-          disabled={recipeLength === 0}
-        >
-          <strong>Download</strong>
+        <button type="button" className="cb-share-action" onClick={downloadRecipe}>
+          <strong>Download recipe</strong>
           <span>.json file</span>
+        </button>
+        <button type="button" className="cb-share-action" onClick={downloadOutput}>
+          <strong>Download output</strong>
+          <span>.txt decoded result</span>
+        </button>
+        <button type="button" className="cb-share-action" onClick={copyOutput}>
+          <strong>Copy output</strong>
+          <span>result to clipboard</span>
         </button>
         <button
           type="button"
           className="cb-share-action"
           onClick={() => {
+            if (!requireRecipe()) return
             saveRecipeToHistory()
             showMessage('saved to local history')
           }}
-          disabled={recipeLength === 0}
         >
           <strong>Save history</strong>
           <span>this device only</span>
@@ -134,6 +159,7 @@ export function RecipeShare({ onDone }: { onDone?: () => void }) {
                 className="cb-menu-item !py-1.5"
                 onClick={() => {
                   loadHistoryEntry(h.id)
+                  showMessage(`loaded: ${h.label}`)
                   onDone?.()
                 }}
               >

@@ -44,7 +44,7 @@ export function InputPane({ suggestPulse = false }: { suggestPulse?: boolean }) 
           )}
         </div>
         <div className="flex items-center gap-1">
-          <div className="relative">
+          <div className="relative z-20">
             <button
               type="button"
               className="cb-btn cb-btn-ghost !px-2 !py-1 !text-[11px]"
@@ -54,7 +54,10 @@ export function InputPane({ suggestPulse = false }: { suggestPulse?: boolean }) 
               Sample ▾
             </button>
             {sampleOpen && (
-              <div className="cb-menu !left-auto !right-0 !min-w-[160px]">
+              <div
+                className="cb-menu !left-auto !right-0 !min-w-[160px]"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 {SAMPLES.map((s) => (
                   <button
                     key={s.label}

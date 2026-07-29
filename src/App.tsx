@@ -8,7 +8,7 @@ import { StatusTray } from './components/StatusTray'
 import { useAppStore } from './store/useAppStore'
 import { applyThemeToDocument } from './core/themes'
 import { TourGuide, shouldAutoShowTour } from './components/TourGuide'
-import { SopGuidePanel } from './components/SopGuidePanel'
+import { openSopInNewTab } from './core/export'
 
 function App() {
   const hydrateRecipeFromUrl = useAppStore((s) => s.hydrateRecipeFromUrl)
@@ -20,7 +20,6 @@ function App() {
   const theme = useAppStore((s) => s.theme)
   const [runFlash, setRunFlash] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
-  const [sopOpen, setSopOpen] = useState(false)
   const [suggestPulse, setSuggestPulse] = useState(false)
 
   useEffect(() => {
@@ -100,7 +99,6 @@ function App() {
         onExecute={flashRun}
         runFlash={runFlash}
         onOpenTour={() => setTourOpen(true)}
-        onOpenSop={() => setSopOpen(true)}
       />
 
       <div className="cb-main">
@@ -141,7 +139,7 @@ function App() {
           <span className="mx-1">·</span>
           <button
             type="button"
-            onClick={() => setSopOpen(true)}
+            onClick={() => openSopInNewTab()}
             className="border-none bg-transparent p-0 font-code text-[var(--text-dim)] underline-offset-2 transition-colors hover:text-[var(--accent)] hover:underline"
           >
             SOP
@@ -149,8 +147,11 @@ function App() {
         </div>
       </footer>
 
-      <TourGuide open={tourOpen} onClose={() => setTourOpen(false)} onOpenSop={() => setSopOpen(true)} />
-      <SopGuidePanel open={sopOpen} onClose={() => setSopOpen(false)} />
+      <TourGuide
+        open={tourOpen}
+        onClose={() => setTourOpen(false)}
+        onOpenSop={() => openSopInNewTab()}
+      />
     </div>
   )
 }
