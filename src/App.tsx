@@ -5,8 +5,8 @@ import { CommandHeader } from './components/layout/CommandHeader'
 import { OperationLibrary } from './components/OperationLibrary'
 import { PipelineStrip } from './components/pipeline/PipelineStrip'
 import { StatusTray } from './components/StatusTray'
-import { MagicSuggestions } from './components/MagicSuggestions'
 import { useAppStore } from './store/useAppStore'
+import { applyThemeToDocument } from './core/themes'
 import { TourGuide, shouldAutoShowTour } from './components/TourGuide'
 import { SopGuidePanel } from './components/SopGuidePanel'
 
@@ -21,23 +21,19 @@ function App() {
   const [runFlash, setRunFlash] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
   const [sopOpen, setSopOpen] = useState(false)
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+  const [suggestPulse, setSuggestPulse] = useState(false)
 
   useEffect(() => {
     hydrateRecipeFromUrl()
   }, [hydrateRecipeFromUrl])
 
   useEffect(() => {
-    const root = document.documentElement
-    const resolved =
-      theme === 'system'
-        ? window.matchMedia('(prefers-color-scheme: light)').matches
-          ? 'light'
-          : 'dark'
-        : theme
-    root.classList.toggle('light', resolved === 'light')
-    root.classList.toggle('dark', resolved === 'dark')
-    root.style.colorScheme = resolved
+    applyThemeToDocument(theme)
+    if (theme !== 'system') return
+    const mq = window.matchMedia('(prefers-color-scheme: light)')
+    const onChange = () => applyThemeToDocument('system')
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
   }, [theme])
 
   useEffect(() => {
@@ -51,6 +47,13 @@ function App() {
     setRunFlash(true)
     window.setTimeout(() => setRunFlash(false), 500)
   }, [runCurrentRecipe])
+
+  const focusSuggestions = useCallback(() => {
+    const el = document.getElementById('magic-suggestions')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    setSuggestPulse(true)
+    window.setTimeout(() => setSuggestPulse(false), 800)
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -116,11 +119,10 @@ function App() {
         </aside>
 
         <section className="cb-col" id="workbench">
-          <MagicSuggestions open={suggestionsOpen} />
           <div className="cb-io">
-            <InputPane />
+            <InputPane suggestPulse={suggestPulse} />
             <OutputPane />
-            <StatusTray onShowSuggestions={() => setSuggestionsOpen((v) => !v)} />
+            <StatusTray onFocusSuggestions={focusSuggestions} />
           </div>
         </section>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Logo } from '../Logo'
 import { RecipeShare } from '../RecipeShare'
+import { THEME_OPTIONS } from '../../core/themes'
 import { useAppStore } from '../../store/useAppStore'
 
 export function CommandHeader({
@@ -18,6 +19,8 @@ export function CommandHeader({
 }) {
   const setTheme = useAppStore((s) => s.setTheme)
   const theme = useAppStore((s) => s.theme)
+  const autoRun = useAppStore((s) => s.autoRun)
+  const setAutoRun = useAppStore((s) => s.setAutoRun)
   const [shareOpen, setShareOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
@@ -44,6 +47,10 @@ export function CommandHeader({
     }
   }, [shareOpen, themeOpen])
 
+  const themeLabel =
+    THEME_OPTIONS.find((t) => t.id === theme)?.label.replace(/ Modern| Terminal| Contrast/g, '') ??
+    'Theme'
+
   return (
     <header className="cb-header">
       <div className="cb-brand" data-tour="brand">
@@ -55,10 +62,20 @@ export function CommandHeader({
       </div>
 
       <div className="cb-header-actions">
+        <label className="cb-btn cb-btn-ghost !gap-2 !px-2" title="Auto-run recipe as input changes">
+          <input
+            type="checkbox"
+            checked={autoRun}
+            onChange={(e) => setAutoRun(e.target.checked)}
+            className="accent-[var(--accent)]"
+          />
+          <span className="hidden sm:inline">Auto</span>
+        </label>
+
         <div className="cb-dropdown" ref={shareRef}>
           <button
             type="button"
-            className="cb-btn cb-btn-ghost"
+            className="cb-btn cb-btn-share"
             data-tour="transmit-panel"
             aria-expanded={shareOpen}
             onClick={() => {
@@ -76,14 +93,11 @@ export function CommandHeader({
               />
             </svg>
             Share
-            <span className="text-[10px] opacity-60">{shareOpen ? '▴' : '▾'}</span>
+            <span className="text-[10px] opacity-70">{shareOpen ? '▴' : '▾'}</span>
           </button>
           {shareOpen && (
             <div className="cb-share-pop">
-              <p className="mb-3 font-code text-[11px] text-[var(--text-muted)]">
-                Export / import recipes. Input never leaves the browser.
-              </p>
-              <RecipeShare />
+              <RecipeShare onDone={() => setShareOpen(false)} />
             </div>
           )}
         </div>
@@ -93,45 +107,47 @@ export function CommandHeader({
             type="button"
             className="cb-btn cb-btn-ghost"
             aria-expanded={themeOpen}
-            aria-label="Theme menu"
+            aria-label="Color theme"
             onClick={() => {
               setThemeOpen((v) => !v)
               setShareOpen(false)
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.75" />
               <path
-                d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3Z"
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
                 stroke="currentColor"
                 strokeWidth="1.75"
                 strokeLinecap="round"
-                strokeLinejoin="round"
               />
             </svg>
-            Theme
+            <span className="hidden md:inline">{themeLabel}</span>
             <span className="text-[10px] opacity-60">{themeOpen ? '▴' : '▾'}</span>
           </button>
           {themeOpen && (
-            <div className="cb-menu" role="menu">
-              {(
-                [
-                  ['dark', 'Dark ops'],
-                  ['light', 'Light lab'],
-                  ['system', 'System'],
-                ] as const
-              ).map(([value, label]) => (
+            <div className="cb-menu cb-theme-menu" role="menu">
+              {THEME_OPTIONS.map((opt) => (
                 <button
-                  key={value}
+                  key={opt.id}
                   type="button"
                   role="menuitem"
-                  className="cb-menu-item"
-                  data-active={theme === value ? 'true' : undefined}
+                  className="cb-theme-option"
+                  data-active={theme === opt.id ? 'true' : undefined}
                   onClick={() => {
-                    setTheme(value)
+                    setTheme(opt.id)
                     setThemeOpen(false)
                   }}
                 >
-                  {label}
+                  <span className="cb-theme-swatches" aria-hidden>
+                    {opt.swatches.map((c) => (
+                      <span key={c} className="cb-theme-swatch" style={{ background: c }} />
+                    ))}
+                  </span>
+                  <span className="cb-theme-meta">
+                    <strong>{opt.label}</strong>
+                    <span>{opt.description}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -161,12 +177,14 @@ export function CommandHeader({
           type="button"
           onClick={onExecute}
           disabled={recipeCount === 0}
-          className={`cb-btn cb-btn-primary ${runFlash ? 'is-flash' : ''}`}
+          title={recipeCount === 0 ? 'Add operations to the recipe first' : 'Run recipe (Ctrl+Enter)'}
+          className={`cb-btn cb-btn-primary cb-btn-run ${runFlash ? 'is-flash' : ''} ${recipeCount > 0 ? 'is-armed' : ''}`}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <path d="M8 5v14l11-7z" />
           </svg>
           Run
+          <span className="cb-run-hint">⌃↵</span>
         </button>
       </div>
     </header>

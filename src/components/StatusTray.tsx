@@ -4,11 +4,7 @@ import { suggestOperations } from '../core/magic'
 import { countIocs } from '../operations/soc-tools/ioc-extract'
 import { useAppStore } from '../store/useAppStore'
 
-export function StatusTray({
-  onShowSuggestions,
-}: {
-  onShowSuggestions: () => void
-}) {
+export function StatusTray({ onFocusSuggestions }: { onFocusSuggestions: () => void }) {
   const input = useAppStore((s) => s.input)
   const outputText = useAppStore((s) => s.outputText)
   const recipe = useAppStore((s) => s.recipe)
@@ -44,8 +40,8 @@ export function StatusTray({
         type="button"
         className="cb-status-item"
         data-active={suggestions.length > 0 ? 'true' : undefined}
-        onClick={onShowSuggestions}
-        title="Show decode suggestions"
+        onClick={onFocusSuggestions}
+        title="Jump to auto-detect suggestions"
       >
         <span aria-hidden>✦</span>
         suggestions{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
