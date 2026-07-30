@@ -6,25 +6,45 @@ describe('xor-cipher', () => {
     const plain = 'hello'
     const enc = xorCipher.run(
       { data: plain, type: 'string' },
-      { mode: 'single-byte', key: '0x05', bruteForceSingleByte: false },
+      {
+        mode: 'single-byte',
+        keyFormat: 'hex',
+        key: '05',
+        nullPreserving: false,
+        bruteForceSingleByte: false,
+      },
     )
     const dec = xorCipher.run(
       { data: enc.data, type: 'string' },
-      { mode: 'single-byte', key: '0x05', bruteForceSingleByte: false },
+      {
+        mode: 'single-byte',
+        keyFormat: 'hex',
+        key: '05',
+        nullPreserving: false,
+        bruteForceSingleByte: false,
+      },
     )
     expect(dec.data).toBe(plain)
   })
 
   it('handles empty input', () => {
     expect(
-      xorCipher.run({ data: '', type: 'string' }, { bruteForceSingleByte: false }).data,
+      xorCipher.run(
+        { data: '', type: 'string' },
+        { bruteForceSingleByte: false, keyFormat: 'hex', key: '41' },
+      ).data,
     ).toBe('')
   })
 
   it('returns error for invalid key', () => {
     const result = xorCipher.run(
       { data: 'x', type: 'string' },
-      { mode: 'single-byte', key: 'not-a-key', bruteForceSingleByte: false },
+      {
+        mode: 'single-byte',
+        keyFormat: 'hex',
+        key: 'not-a-key',
+        bruteForceSingleByte: false,
+      },
     )
     expect(result.error).toBeDefined()
   })
@@ -32,7 +52,13 @@ describe('xor-cipher', () => {
   it('repeating-key XOR', () => {
     const result = xorCipher.run(
       { data: 'abcd', type: 'string' },
-      { mode: 'repeating-key', key: 'key', bruteForceSingleByte: false },
+      {
+        mode: 'repeating-key',
+        keyFormat: 'utf8',
+        key: 'key',
+        nullPreserving: false,
+        bruteForceSingleByte: false,
+      },
     )
     expect(result.error).toBeUndefined()
     expect(result.data.length).toBe(4)
@@ -43,7 +69,13 @@ describe('xor-cipher', () => {
     const plain = 'FLAG{easy_xor_test}'
     const cipher = xorCipher.run(
       { data: plain, type: 'string' },
-      { mode: 'single-byte', key: `0x${key.toString(16)}`, bruteForceSingleByte: false },
+      {
+        mode: 'single-byte',
+        keyFormat: 'hex',
+        key: key.toString(16),
+        nullPreserving: false,
+        bruteForceSingleByte: false,
+      },
     )
     const brute = xorCipher.run(
       { data: cipher.data, type: 'string' },

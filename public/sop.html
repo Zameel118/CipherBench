@@ -802,7 +802,10 @@
             <table class="op-table">
               <thead><tr><th>Op</th><th>Function</th></tr></thead>
               <tbody>
-                <tr><td>From / To Base64</td><td>Standard or URL-safe alphabet. Decode is the usual first hop on CTF blobs and JWT segments.</td></tr>
+                <tr><td>From / To Base64</td><td>Standard or URL-safe. Decode supports <strong>Remove non-alphabet</strong> (default on) and <strong>Strict mode</strong> (CyberChef-compatible).</td></tr>
+                <tr><td>From / To Charcode</td><td>Code points as decimal / hex / octal / binary with space, comma, 0x, or \x delimiters.</td></tr>
+                <tr><td>From / To Morse</td><td>International Morse; supports .-/01/•— styles and word gaps (/).</td></tr>
+                <tr><td>Reverse</td><td>By <strong>character</strong>, <strong>byte</strong>, or <strong>line</strong>.</td></tr>
                 <tr><td>From / To Base32</td><td>RFC 4648 Base32 (common in TOTP seeds and some malware configs).</td></tr>
                 <tr><td>From / To Base58</td><td>Bitcoin-style alphabet (no 0/O/I/l) for wallet-adjacent CTF strings.</td></tr>
                 <tr><td>From / To Ascii85</td><td>Adobe Ascii85 with <code>&lt;~ ~&gt;</code> framing.</td></tr>
@@ -829,9 +832,12 @@
           <div class="block-body"><div class="block-body-inner">
             <h3>XOR</h3>
             <p>
-              Single-byte or repeating-key XOR. Optional <strong>single-byte brute force</strong> tries all 256 keys
-              (Web Worker when available), ranks by printable ratio. Large inputs are blocked in brute mode.
+              Single-byte or repeating-key XOR. Key format: <strong>hex</strong>, utf8, decimal, or base64
+              (e.g. key <code>8F</code>). Optional <strong>null-preserving</strong> mode and single-byte brute force
+              (Web Worker when available). Large inputs are blocked in brute mode.
             </p>
+            <h3>Vigenère</h3>
+            <p>Classic polyalphabetic cipher on A–Z / a–z with an alphabetic key (encrypt or decrypt).</p>
             <h3>ROT13 / Caesar</h3>
             <p>
               Shift A–Z / a–z. Use shift 13 for ROT13, or enable brute-force of all non-zero shifts.
@@ -882,6 +888,7 @@
                 <tr><td>Raw Inflate / Deflate</td><td>RFC 1951 without zlib/gzip headers.</td></tr>
                 <tr><td>Hex Dump</td><td>Classic offset + hex + ASCII view (file drops arm this automatically).</td></tr>
                 <tr><td>Magic Bytes</td><td>Identify gzip, ZIP, ELF, PE, PNG, JPEG, PDF from head bytes.</td></tr>
+                <tr><td>Entropy</td><td>Shannon entropy (0–8 bits/byte) with a plain-language assessment for crypto/compression spotting.</td></tr>
                 <tr><td>JSON Path</td><td>Parse JSON and pull <code>$.a.b</code> / <code>items[0].id</code> style paths.</td></tr>
               </tbody>
             </table>

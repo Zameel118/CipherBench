@@ -1,12 +1,44 @@
 import type { Operation } from '../../core/types'
+import { stringFromCharCodes } from '../../core/char-codes'
 
 export const reverseString: Operation = {
   id: 'reverse-string',
   name: 'Reverse',
   category: 'Encoding',
-  description: 'Reverse character order (Unicode-aware).',
-  params: [],
-  run: (input) => {
+  description: 'Reverse by character (Unicode-aware), byte (latin1 code units), or line.',
+  params: [
+    {
+      name: 'by',
+      type: 'select',
+      default: 'character',
+      options: ['character', 'byte', 'line'],
+    },
+  ],
+  run: (input, params) => {
+    const by = String(params.by ?? 'character')
+    if (!input.data) return { data: '', type: 'string' }
+
+    if (by === 'line') {
+      const endsWithNl = /\r?\n$/.test(input.data)
+      const lines = input.data.split(/\r?\n/)
+      if (endsWithNl && lines[lines.length - 1] === '') lines.pop()
+      lines.reverse()
+      return { data: lines.join('\n') + (endsWithNl ? '\n' : ''), type: 'string' }
+    }
+
+    if (by === 'byte') {
+      // Reverse UTF-16 code units that fit in a byte (pipeline latin1); for
+      // higher code units reverse code-unit order (same as CyberChef "Byte"
+      // on ArrayBuffer views when input is already byte-oriented).
+      const codes = []
+      for (let i = 0; i < input.data.length; i++) {
+        codes.push(input.data.charCodeAt(i) & 0xff)
+      }
+      codes.reverse()
+      return { data: stringFromCharCodes(codes), type: 'string' }
+    }
+
+    // character (default) — Unicode code points
     const chars = [...input.data]
     chars.reverse()
     return { data: chars.join(''), type: 'string' }

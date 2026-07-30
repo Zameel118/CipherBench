@@ -9,7 +9,7 @@ import {
 
 describe('text transforms', () => {
   it('reverses unicode-aware', () => {
-    const result = reverseString.run({ data: 'ab🔥cd', type: 'string' }, {})
+    const result = reverseString.run({ data: 'ab🔥cd', type: 'string' }, { by: 'character' })
     expect(result.data).toBe('dc🔥ba')
   })
 

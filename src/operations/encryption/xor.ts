@@ -21,29 +21,71 @@ export function printableRatio(text: string): number {
   return printable / text.length
 }
 
-function parseKeyByte(key: string): number | null {
-  const trimmed = key.trim()
-  if (trimmed.length === 0) return null
-  if (/^(0x)?[0-9a-fA-F]{1,2}$/.test(trimmed)) {
-    const n = parseInt(trimmed.replace(/^0x/i, ''), 16)
-    return n & 0xff
+function parseHexBytes(key: string): number[] | null {
+  const cleaned = key.trim().replace(/^0x/i, '').replace(/[\s:_,-]/g, '')
+  if (!cleaned || cleaned.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(cleaned)) return null
+  const out: number[] = []
+  for (let i = 0; i < cleaned.length; i += 2) {
+    out.push(parseInt(cleaned.slice(i, i + 2), 16) & 0xff)
   }
-  const n = Number(trimmed)
-  if (Number.isInteger(n) && n >= 0 && n <= 255) return n
-  return null
+  return out.length ? out : null
 }
 
-function xorWithKey(text: string, keyBytes: number[]): string {
+function parseDecimalBytes(key: string): number[] | null {
+  const parts = key.trim().split(/[\s,]+/).filter(Boolean)
+  if (parts.length === 0) return null
+  const out: number[] = []
+  for (const p of parts) {
+    const n = Number(p)
+    if (!Number.isInteger(n) || n < 0 || n > 255) return null
+    out.push(n)
+  }
+  return out
+}
+
+function parseBase64Key(key: string): number[] | null {
+  try {
+    const bin = atob(key.trim().replace(/-/g, '+').replace(/_/g, '/'))
+    return [...bin].map((c) => c.charCodeAt(0) & 0xff)
+  } catch {
+    return null
+  }
+}
+
+/** Parse XOR key according to CyberChef-style key format. */
+export function parseXorKeyBytes(key: string, format: string): number[] | null {
+  const trimmed = key.trim()
+  if (!trimmed) return null
+  const fmt = format.toLowerCase()
+
+  if (fmt === 'hex') {
+    // Allow single-byte shortcuts: "8F", "0x8F", "41"
+    if (/^(0x)?[0-9a-fA-F]{1,2}$/.test(trimmed)) {
+      return [parseInt(trimmed.replace(/^0x/i, ''), 16) & 0xff]
+    }
+    return parseHexBytes(trimmed)
+  }
+  if (fmt === 'decimal') return parseDecimalBytes(trimmed)
+  if (fmt === 'base64') return parseBase64Key(trimmed)
+  // utf8 / latin1: each code unit as a key byte
+  return [...trimmed].map((ch) => ch.charCodeAt(0) & 0xff)
+}
+
+function xorWithKey(text: string, keyBytes: number[], nullPreserving: boolean): string {
   if (keyBytes.length === 0) return text
-  const codes = [...text].map((ch) => ch.charCodeAt(0))
-  const out = codes.map((c, i) => c ^ keyBytes[i % keyBytes.length]!)
+  const codes = [...text].map((ch) => ch.charCodeAt(0) & 0xff)
+  const out = codes.map((c, i) => {
+    const k = keyBytes[i % keyBytes.length]!
+    if (nullPreserving && (c === 0 || k === 0)) return c
+    return c ^ k
+  })
   return stringFromCharCodes(out)
 }
 
 function xorBruteSync(raw: string) {
   const candidates: { key: number; text: string; score: number }[] = []
   for (let k = 0; k < 256; k++) {
-    const decoded = xorWithKey(raw, [k])
+    const decoded = xorWithKey(raw, [k], false)
     candidates.push({ key: k, text: decoded, score: printableRatio(decoded) })
   }
   candidates.sort((a, b) => b.score - a.score || a.key - b.key)
@@ -60,7 +102,7 @@ export const xorCipher: Operation = {
   name: 'XOR',
   category: 'Encryption',
   description:
-    'XOR each byte with a single-byte or repeating key. Optional single-byte brute force (Web Worker when available).',
+    'XOR each byte with a key (hex/utf8/decimal/base64). Optional null-preserving and single-byte brute force.',
   params: [
     {
       name: 'mode',
@@ -69,9 +111,20 @@ export const xorCipher: Operation = {
       options: ['single-byte', 'repeating-key'],
     },
     {
+      name: 'keyFormat',
+      type: 'select',
+      default: 'hex',
+      options: ['hex', 'utf8', 'decimal', 'base64'],
+    },
+    {
       name: 'key',
       type: 'string',
-      default: '0x41',
+      default: '41',
+    },
+    {
+      name: 'nullPreserving',
+      type: 'boolean',
+      default: false,
     },
     {
       name: 'bruteForceSingleByte',
@@ -94,30 +147,24 @@ export const xorCipher: Operation = {
     }
 
     const mode = String(params.mode ?? 'single-byte')
+    const keyFormat = String(params.keyFormat ?? 'hex')
     const keyStr = String(params.key ?? '')
+    const nullPreserving = params.nullPreserving === true
 
-    if (mode === 'single-byte') {
-      const byte = parseKeyByte(keyStr)
-      if (byte === null) {
-        return {
-          data: raw,
-          type: 'string',
-          error: 'Invalid XOR key: use 0–255 or hex byte (e.g. 0x41)',
-        }
-      }
-      return { data: xorWithKey(raw, [byte]), type: 'string' }
-    }
-
-    if (keyStr.length === 0) {
+    const keyBytes = parseXorKeyBytes(keyStr, keyFormat)
+    if (!keyBytes || keyBytes.length === 0) {
       return {
         data: raw,
         type: 'string',
-        error: 'Repeating key cannot be empty',
+        error: `Invalid XOR key for format "${keyFormat}"`,
       }
     }
 
-    const keyBytes = [...keyStr].map((ch) => ch.charCodeAt(0) & 0xff)
-    return { data: xorWithKey(raw, keyBytes), type: 'string' }
+    if (mode === 'single-byte') {
+      return { data: xorWithKey(raw, [keyBytes[0]!], nullPreserving), type: 'string' }
+    }
+
+    return { data: xorWithKey(raw, keyBytes, nullPreserving), type: 'string' }
   },
   runAsync: async (input, params) => {
     if (params.bruteForceSingleByte !== true) {

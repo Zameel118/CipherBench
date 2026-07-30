@@ -11,6 +11,7 @@ import {
 } from './encoding/base-n'
 import { base64Decode, base64Encode } from './encoding/base64'
 import { binaryToText, textToBinary } from './encoding/binary-text'
+import { fromCharcode, toCharcode } from './encoding/charcode'
 import {
   gzipCompress,
   gzipDecompress,
@@ -26,6 +27,7 @@ import {
   punycodeDecode,
   punycodeEncode,
 } from './encoding/html-entities'
+import { fromMorse, toMorse } from './encoding/morse'
 import {
   normalizeWhitespace,
   reverseString,
@@ -34,9 +36,11 @@ import {
   trimWhitespace,
 } from './encoding/text-transform'
 import { urlDecode, urlEncode } from './encoding/url'
+import { entropyAnalysis } from './data-format/entropy'
 import { hexDump, magicBytes } from './data-format/hex-dump'
 import { aesCrypt, hmacSign, rc4Crypt } from './encryption/aes-rc4-hmac'
 import { rot13Caesar } from './encryption/rot13-caesar'
+import { vigenereCipher } from './encryption/vigenere'
 import { xorCipher } from './encryption/xor'
 import {
   findReplace,
@@ -73,6 +77,10 @@ const allOperations: Operation[] = [
   punycodeEncode,
   textToBinary,
   binaryToText,
+  toCharcode,
+  fromCharcode,
+  toMorse,
+  fromMorse,
   reverseString,
   toUppercase,
   toLowercase,
@@ -86,8 +94,10 @@ const allOperations: Operation[] = [
   rawDeflateCompress,
   hexDump,
   magicBytes,
+  entropyAnalysis,
   jsonPathQuery,
   rot13Caesar,
+  vigenereCipher,
   xorCipher,
   aesCrypt,
   rc4Crypt,
